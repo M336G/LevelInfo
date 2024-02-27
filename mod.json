@@ -2,10 +2,10 @@
 	"geode": "2.0.0-beta.17",
 	"version": "v1.0.0",
     	"gd": {
-        "win": "2.204",
-        "android": "2.205",
-        "mac": "2.200"
-    },
+        	"win": "2.204",
+        	"android": "2.205",
+        	"mac": "2.200"
+    	},
 	"id": "m336.levelinfo",
 	"name": "Level Info",
 	"developer": "M336",
