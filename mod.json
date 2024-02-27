@@ -1,11 +1,16 @@
 {
 	"geode": "2.0.0-beta.17",
 	"version": "v1.0.0",
-	"gd": "2.204",
+    "gd": {
+        "win": "2.204",
+        "android": "2.205",
+        "mac": "2.200"
+    },
 	"id": "m336.levelinfo",
 	"name": "Level Info",
 	"developer": "M336",
 	"description": "A QoL mod that displays stats about levels",
+    "repository": "https://github.com/M336G/LevelInfo",
 	"settings": {
 		"show-requested-stars": {
             "name": "Requested Stars",
