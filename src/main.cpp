@@ -1,6 +1,5 @@
 #include <Geode/modify/LevelInfoLayer.hpp>
 #include <Geode/Bindings.hpp>
-#include <Geode/modify/MenuLayer.hpp>
 
 using namespace geode::prelude;
 
@@ -17,6 +16,9 @@ class $modify(LevelInfoLayer) {
 		auto objectCountToggle = Mod::get()->getSettingValue<bool>("show-object-count");
 		auto levelVersionToggle = Mod::get()->getSettingValue<bool>("show-level-version");
 		auto twoPlayerModeToggle = Mod::get()->getSettingValue<bool>("show-two-player-mode");
+
+		// Get the text color defined by the user
+		auto textColor = Mod::get()->getSettingValue<cocos2d::ccColor3B>("text-color");
 
 		// Get the size of the window
         auto winSize = CCDirector::get()->getWinSize();
@@ -55,6 +57,7 @@ class $modify(LevelInfoLayer) {
         label->setPosition(winSize / 1.4);
 		label->setPositionX(100);
 		label->setScale(0.3);
+		label->setColor(textColor);
         this->addChild(label);
 
 		return true;

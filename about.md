@@ -2,7 +2,7 @@
 
 A QoL mod that displays stats about levels
 
-Pretty much every stats are toggleable
+Pretty much every stats are toggleable, even the text color!
 
 ----------
 ### Why did you make this?
