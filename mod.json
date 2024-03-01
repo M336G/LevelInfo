@@ -1,6 +1,6 @@
 {
 	"geode": "2.0.0-beta.17",
-	"version": "v1.0.1",
+	"version": "v1.2.0",
     "gd": {
         "win": "2.204",
         "android": "2.205",
@@ -11,6 +11,7 @@
 	"developer": "M336",
 	"description": "A QoL mod that displays stats about levels",
     "repository": "https://github.com/M336G/LevelInfo",
+    "issues": {"info": "GitHub Issues", "url": "https://github.com/M336G/LevelInfo/issues"},
 	"tags": [
 		"Utility",
 		"Interface"
@@ -42,7 +43,13 @@
         },
 		"show-two-player-mode": {
             "name": "2 Player mode",
-            "description": "Indicates if the level is 2 player mode",
+            "description": "Indicates if the level is using 2 player mode",
+            "type": "bool",
+            "default": true
+        },
+        "show-game-version": {
+            "name": "Game Version",
+            "description": "Display the game version in which the level was posted",
             "type": "bool",
             "default": true
         },
