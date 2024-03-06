@@ -3,12 +3,8 @@
 
 using namespace geode::prelude;
 
-class $modify(LevelInfoLayer)
-{
-	bool init(GJGameLevel* level, bool p1)
-	{
-		if (!LevelInfoLayer::init(level, false))
-			return false;
+class $modify(LevelInfoLayer) {
+	bool init(GJGameLevel* level, bool p1) {
 
 		std::string labelText;
 
@@ -24,20 +20,18 @@ class $modify(LevelInfoLayer)
 		auto textColor = Mod::get()->getSettingValue<cocos2d::ccColor3B>("text-color");
 
 		// Get the size of the window
-        	const auto winSize = cocos2d::CCDirector::get()->getWinSize();
+        const auto winSize = CCDirector::get()->getWinSize();
 
 		// Here I define every stats, if they are enabled
 		if (requestedStarsToggle) {
-			labelText += fmt::format("Requested Difficulty: {}\n", level->m_starsRequested).c_str();
+    		labelText += fmt::format("Requested Difficulty: {}\n", level->m_starsRequested).c_str();
 		}
 
-		if (featuredRankToggle)
-		{
+		if (featuredRankToggle) {
 			labelText += fmt::format("Featured Rank: {}\n", (level -> m_featured != 0) ? std::to_string(level -> m_featured) : "N/A").c_str();
 		}
 
-		if (objectCountToggle)
-		{
+		if (objectCountToggle) {
 			int objectCount = static_cast<int>(level->m_objectCount);
 
 			labelText += fmt::format("Object Count: {}\n", ((objectCount >= 0) ? std::to_string(objectCount) : "Unknown")).c_str();
@@ -50,7 +44,7 @@ class $modify(LevelInfoLayer)
 				case 22 :
 					labelText += fmt::format("Game Version: 2.2\n").c_str();
 					break;
-					
+
 				case 21 :
 					labelText += fmt::format("Game Version: 2.1\n").c_str();
 					break;
@@ -70,9 +64,9 @@ class $modify(LevelInfoLayer)
 				case 10 :
 					labelText += fmt::format("Game Version: 1.7\n").c_str();
 					break;
-				
+
 				default :
-					labelText += fmt::format("Game Version: 1.6-\n").c_str();
+					labelText += fmt::format("Game Version: Pre-1.7\n").c_str();
 					break;
 			}
 		}
@@ -87,12 +81,12 @@ class $modify(LevelInfoLayer)
 
 		// Try to display the label
 		try {
-        		auto label = cocos2d::CCLabelBMFont::create(fmt::format("{}", labelText).c_str(), "bigFont.fnt");
-        		label->setPosition(winSize / 1.4);
+        	auto label = CCLabelBMFont::create(fmt::format("{}", labelText).c_str(), "bigFont.fnt");
+        	label->setPosition(winSize / 1.4);
 			label->setPositionX(100);
 			label->setScale(0.3);
 			label->setColor(textColor);
-        		this->addChild(label);
+        	this->addChild(label);
 			geode::log::debug("Successfully displayed the level info text");
 		}
 
@@ -101,6 +95,7 @@ class $modify(LevelInfoLayer)
 			Notification::create("An error occured while trying to display the level info text", NotificationIcon::Error, 1)->show();
 			geode::log::error("An error occured while trying to display the level info text");
 		}
+
 		return true;
 	}
 };
