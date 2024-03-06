@@ -5,6 +5,8 @@ using namespace geode::prelude;
 
 class $modify(LevelInfoLayer) {
 	bool init(GJGameLevel* level, bool p1) {
+		if (!LevelInfoLayer::init(level, false))
+			return false;
 
 		std::string labelText;
 
