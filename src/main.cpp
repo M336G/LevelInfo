@@ -3,20 +3,22 @@
 
 using namespace geode::prelude;
 
-class $modify(LevelInfoLayer) {
-	bool init(GJGameLevel* level, bool p1) {
+class $modify(LevelInfoLayer)
+{
+	bool init(GJGameLevel* level, bool p1)
+	{
 		if (!LevelInfoLayer::init(level, false))
 			return false;
 
 		std::string labelText;
 
 		// Get all the settings values
-		auto requestedStarsToggle = Mod::get()->getSettingValue<bool>("show-requested-stars");
-		auto featuredRankToggle = Mod::get()->getSettingValue<bool>("show-featured-rank");
-		auto objectCountToggle = Mod::get()->getSettingValue<bool>("show-object-count");
-		auto gameVersionToggle = Mod::get()->getSettingValue<bool>("show-game-version");
-		auto levelVersionToggle = Mod::get()->getSettingValue<bool>("show-level-version");
-		auto twoPlayerModeToggle = Mod::get()->getSettingValue<bool>("show-two-player-mode");
+		bool requestedStarsToggle = Mod::get()->getSettingValue<bool>("show-requested-stars");
+		bool featuredRankToggle = Mod::get()->getSettingValue<bool>("show-featured-rank");
+		bool objectCountToggle = Mod::get()->getSettingValue<bool>("show-object-count");
+		bool gameVersionToggle = Mod::get()->getSettingValue<bool>("show-game-version");
+		bool levelVersionToggle = Mod::get()->getSettingValue<bool>("show-level-version");
+		bool twoPlayerModeToggle = Mod::get()->getSettingValue<bool>("show-two-player-mode");
 
 		// Get the text color defined by the user
 		auto textColor = Mod::get()->getSettingValue<cocos2d::ccColor3B>("text-color");
@@ -25,54 +27,53 @@ class $modify(LevelInfoLayer) {
         const auto winSize = CCDirector::get()->getWinSize();
 
 		// Here I define every stats, if they are enabled
-	if (requestedStarsToggle) {
-    	labelText += fmt::format("Requested Difficulty: {}\n", level->m_starsRequested).c_str();
-	}
-
-		if (featuredRankToggle) {
-			if (level->m_featured != 0) {
-				labelText += fmt::format("Featured Rank: {}\n", level->m_featured).c_str();
-			}
-			else {
-				// If it's 0 (not featured), I display "N/A" instead
-				labelText += fmt::format("Featured Rank: N/A\n").c_str();
-			}
-			
+		if (requestedStarsToggle) {
+			labelText += fmt::format("Requested Difficulty: {}\n", level->m_starsRequested).c_str();
 		}
 
-		if (objectCountToggle) {
+		if (featuredRankToggle)
+		{
+			labelText += fmt::format("Featured Rank: {}\n", (level -> m_featured != 0) ? std::to_string(level -> m_featured) : "N/A").c_str();
+		}
+
+		if (objectCountToggle)
+		{
 			int objectCount = static_cast<int>(level->m_objectCount);
 
-			if (objectCount != 0) {
-				labelText += fmt::format("Object Count: {}\n", objectCount).c_str();
-			}
-			else {
-				// same thing
-				labelText += fmt::format("Object Count: Unknown\n").c_str();
-			}
+			labelText += fmt::format("Object Count: {}\n", ((objectCount >= 0) ? std::to_string(objectCount) : "Unknown")).c_str();
 		}
 
-		if (gameVersionToggle) {
-			if (level->m_gameVersion == 22) {
-				labelText += fmt::format("Game Version: 2.2\n").c_str();
-			}
-			else if (level->m_gameVersion == 21) {
-				labelText += fmt::format("Game Version: 2.1\n").c_str();
-			}
-			else if (level->m_gameVersion == 20) {
-				labelText += fmt::format("Game Version: 2.0\n").c_str();
-			}
-			else if (level->m_gameVersion == 19) {
-				labelText += fmt::format("Game Version: 1.9\n").c_str();
-			}
-			else if (level->m_gameVersion == 18) {
-				labelText += fmt::format("Game Version: 1.8\n").c_str();
-			}
-			else if (level->m_gameVersion == 10) {
-				labelText += fmt::format("Game Version: 1.7\n").c_str();
-			}
-			else {
-				labelText += fmt::format("Game Version: Unknown\n").c_str();
+		if (gameVersionToggle)
+		{
+			switch(level -> m_gameVersion)
+			{
+				case 22 :
+					labelText += fmt::format("Game Version: 2.2\n").c_str();
+					break;
+					
+				case 21 :
+					labelText += fmt::format("Game Version: 2.1\n").c_str();
+					break;
+
+				case 20 :
+					labelText += fmt::format("Game Version: 2.0\n").c_str();
+					break;
+
+				case 19 :
+					labelText += fmt::format("Game Version: 1.9\n").c_str();
+					break;
+
+				case 18 :
+					labelText += fmt::format("Game Version: 1.8\n").c_str();
+					break;
+
+				case 10 :
+					labelText += fmt::format("Game Version: 1.7\n").c_str();
+					break;
+				
+				default :
+					labelText += fmt::format("Game Version: 1.6-\n").c_str();
+					break;
 			}
 		}
 
