@@ -5,18 +5,16 @@ using namespace geode::prelude;
 
 class $modify(LevelInfoLayer) {
 	bool init(GJGameLevel* level, bool p1) {
-		if (!LevelInfoLayer::init(level, false))
-			return false;
 
 		std::string labelText;
 
 		// Get all the settings values
-		bool requestedStarsToggle = Mod::get()->getSettingValue<bool>("show-requested-stars");
-		bool featuredRankToggle = Mod::get()->getSettingValue<bool>("show-featured-rank");
-		bool objectCountToggle = Mod::get()->getSettingValue<bool>("show-object-count");
-		bool gameVersionToggle = Mod::get()->getSettingValue<bool>("show-game-version");
-		bool levelVersionToggle = Mod::get()->getSettingValue<bool>("show-level-version");
-		bool twoPlayerModeToggle = Mod::get()->getSettingValue<bool>("show-two-player-mode");
+		auto requestedStarsToggle = Mod::get()->getSettingValue<bool>("show-requested-stars");
+		auto featuredRankToggle = Mod::get()->getSettingValue<bool>("show-featured-rank");
+		auto objectCountToggle = Mod::get()->getSettingValue<bool>("show-object-count");
+		auto gameVersionToggle = Mod::get()->getSettingValue<bool>("show-game-version");
+		auto levelVersionToggle = Mod::get()->getSettingValue<bool>("show-level-version");
+		auto twoPlayerModeToggle = Mod::get()->getSettingValue<bool>("show-two-player-mode");
 
 		// Get the text color defined by the user
 		auto textColor = Mod::get()->getSettingValue<cocos2d::ccColor3B>("text-color");
