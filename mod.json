@@ -1,17 +1,16 @@
 {
 	"geode": "2.0.0-beta.17",
 	"version": "v1.2.0",
-	"gd": {
-        	"win": "2.204",
-        	"android": "2.205",
-        	"mac": "2.200"
-    	},
+    "gd": {
+        "win": "2.204",
+        "android": "2.205"
+    },
 	"id": "m336.levelinfo",
 	"name": "Level Info",
 	"developer": "M336",
 	"description": "A QoL mod that displays stats about levels",
-	"repository": "https://github.com/M336G/LevelInfo",
-	"issues": {"info": "GitHub Issues", "url": "https://github.com/M336G/LevelInfo/issues"},
+    "repository": "https://github.com/M336G/LevelInfo",
+    "issues": {"info": "GitHub Issues", "url": "https://github.com/M336G/LevelInfo/issues"},
 	"tags": [
 		"Utility",
 		"Interface"
