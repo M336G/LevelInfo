@@ -24,7 +24,7 @@ class $modify(LevelInfoLayer)
 		auto textColor = Mod::get()->getSettingValue<cocos2d::ccColor3B>("text-color");
 
 		// Get the size of the window
-        const auto winSize = CCDirector::get()->getWinSize();
+        	const auto winSize = CCDirector::get()->getWinSize();
 
 		// Here I define every stats, if they are enabled
 		if (requestedStarsToggle) {
@@ -87,12 +87,12 @@ class $modify(LevelInfoLayer)
 
 		// Try to display the label
 		try {
-        	auto label = CCLabelBMFont::create(fmt::format("{}", labelText).c_str(), "bigFont.fnt");
-        	label->setPosition(winSize / 1.4);
+        		auto label = CCLabelBMFont::create(fmt::format("{}", labelText).c_str(), "bigFont.fnt");
+        		label->setPosition(winSize / 1.4);
 			label->setPositionX(100);
 			label->setScale(0.3);
 			label->setColor(textColor);
-        	this->addChild(label);
+        		this->addChild(label);
 			geode::log::debug("Successfully displayed the level info text");
 		}
 
@@ -101,7 +101,6 @@ class $modify(LevelInfoLayer)
 			Notification::create("An error occured while trying to display the level info text", NotificationIcon::Error, 1)->show();
 			geode::log::error("An error occured while trying to display the level info text");
 		}
-
 		return true;
 	}
 };
