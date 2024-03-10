@@ -1,9 +1,10 @@
 {
 	"geode": "2.0.0-beta.17",
-	"version": "v1.2.1",
+	"version": "v1.3.0",
     "gd": {
         "win": "2.204",
-        "android": "2.205"
+        "android": "2.205",
+        "mac": "2.200"
     },
 	"id": "m336.levelinfo",
 	"name": "Level Info",
@@ -36,7 +37,7 @@
         },
 		"show-object-count": {
             "name": "Object Count",
-            "description": "Indicates how many objects are in the level",
+            "description": "Indicates how many objects are in the level (might be inacurate for levels with more than 65535 objects)",
             "type": "bool",
             "default": true
         },
@@ -55,6 +56,42 @@
 		"show-level-version": {
             "name": "Level Version",
             "description": "Displays the current version of a level",
+            "type": "bool",
+            "default": true
+        },
+		"show-editor-time": {
+            "name": "Editor Time",
+            "description": "Shows how much time the creator(s) of the level spent in the editor",
+            "type": "bool",
+            "default": true
+        },
+		"show-editor-time-copies": {
+            "name": "Editor Time (+copies)",
+            "description": "Shows how much time the creator(s) of the level spent in the editor (with copies)",
+            "type": "bool",
+            "default": true
+        },
+		"show-total-attempts": {
+            "name": "Attempts",
+            "description": "Show how many attempts you spent on the level",
+            "type": "bool",
+            "default": true
+        },
+		"show-total-jumps": {
+            "name": "Jumps",
+            "description": "Show how many times you jumped in the level",
+            "type": "bool",
+            "default": true
+        },
+		"show-clicks": {
+            "name": "Clicks",
+            "description": "Show how many times you clicked during your best attempt",
+            "type": "bool",
+            "default": true
+        },
+		"show-attempt-time": {
+            "name": "Best time",
+            "description": "Show your best time on a level",
             "type": "bool",
             "default": true
         }
