@@ -1,5 +1,4 @@
 #include <Geode/modify/LevelInfoLayer.hpp>
-#include <Geode/Bindings.hpp>
 #include <Geode/cocos/support/zip_support/ZipUtils.h>
 
 using namespace geode::prelude;
@@ -32,107 +31,106 @@ class $modify(LevelInfoLayer) {
 			// Get the size of the window
         	const auto winSize = CCDirector::get()->getWinSize();
 
-			std::string labelText;
-
+			std::stringstream labelStringStream;
+			
 			// Here I define every stats, if they are enabled
 			if (requestedStarsToggle) {
-    			labelText += fmt::format("Req. Difficulty: {}\n", level->m_starsRequested).c_str();
+				 labelStringStream << fmt::format("Req. Difficulty: {}\n", level->m_starsRequested);
 			}
 
 			if (featuredRankToggle) {
-				labelText += fmt::format("Featured Rank: {}\n", (level -> m_featured != 0) ? std::to_string(level -> m_featured) : "N/A").c_str();
+				labelStringStream << fmt::format("Featured Rank: {}\n", (level -> m_featured != 0) ? std::to_string(level -> m_featured) : "N/A");
 			}
 
 			if (objectCountToggle) {
-				std::string levelString;
-				size_t objectCount = static_cast<int>(level->m_objectCount);
-				switch(level->m_objectCount) {
-					case 0:
-					case 65535:
-						levelString = ZipUtils::decompressString(level->m_levelString, false, 0);
-						objectCount = 0;
-						objectCount = count(levelString.begin(), levelString.end(), ';');
-						labelText += fmt::format("Object Count: ~{}\n", ((objectCount >= 0) ? std::to_string(objectCount) : "Unknown")).c_str();
-						break;
-					default:
-						labelText += fmt::format("Object Count: {}\n", ((objectCount >= 0) ? std::to_string(objectCount) : "Unknown")).c_str();
-						break;
-				}
+    			std::string levelString;
+    			size_t objectCount = static_cast<size_t>(level->m_objectCount);
+    			std::string objectCountStr;
+    			switch(objectCount) {
+        			case 0:
+        			case 65535:
+            			levelString = ZipUtils::decompressString(level->m_levelString, false, 0);
+            			objectCount = count(levelString.begin(), levelString.end(), ';');
+            			objectCountStr = std::to_string(objectCount);
+            			labelStringStream << fmt::format("Object Count: ~{}\n", objectCountStr);
+            			break;
+        			default:
+            			objectCountStr = std::to_string(objectCount);
+            			labelStringStream << fmt::format("Object Count: {}\n", objectCountStr);
+            			break;
+    			}
 			}
 				
 			if (gameVersionToggle) {
 				switch(level -> m_gameVersion) {
-					case 22 :
-						labelText += fmt::format("Game Version: 2.2\n").c_str();
+					case 22:
+						labelStringStream << fmt::format("Game Version: 2.2\n");
 						break;
-
-					case 21 :
-						labelText += fmt::format("Game Version: 2.1\n").c_str();
+					case 21:
+						labelStringStream << fmt::format("Game Version: 2.1\n");
 						break;
-
-					case 20 :
-						labelText += fmt::format("Game Version: 2.0\n").c_str();
+					case 20:
+						labelStringStream << fmt::format("Game Version: 2.0\n");
 						break;
-
-					case 19 :
-						labelText += fmt::format("Game Version: 1.9\n").c_str();
+					case 19:
+						labelStringStream << fmt::format("Game Version: 1.9\n");
 						break;
-
-					case 18 :
-						labelText += fmt::format("Game Version: 1.8\n").c_str();
+					case 18:
+						labelStringStream << fmt::format("Game Version: 1.8\n");
 						break;
-
-					case 10 :
-						labelText += fmt::format("Game Version: 1.7\n").c_str();
+					case 10:
+						labelStringStream << fmt::format("Game Version: 1.7\n");
 						break;
-
-					default :
-						labelText += fmt::format("Game Version: Pre-1.7\n").c_str();
+					default:
+						labelStringStream << fmt::format("Game Version: Pre-1.7\n");
 						break;
 				}
-			}
+			}	
 
 			if (twoPlayerModeToggle) {
-				labelText += fmt::format("2 Player Mode: {}\n", level->m_twoPlayerMode).c_str();
+				labelStringStream << fmt::format("2 Player Mode: {}\n", level->m_twoPlayerMode);
 			}
 
 			if (levelVersionToggle) {
-				labelText += fmt::format("Level Version: {}\n", level->m_levelVersion).c_str();
+				labelStringStream << fmt::format("Level Version: {}\n", level->m_levelVersion);
 			}
 
 			if (editorTimeToggle) {
 				seconds seconds(level->m_workingTime);
-				labelText += fmt::format("Edit. Time: {}h{}m{}s \n", duration_cast<hours>(seconds).count(), duration_cast<minutes>(seconds).count() % 60, seconds.count() % 60).c_str();
+				labelStringStream << fmt::format("Edit. Time: {}h{}m{}s \n", duration_cast<hours>(seconds).count(), duration_cast<minutes>(seconds).count() % 60, seconds.count() % 60);
 			}
 
 			if (editorTimeCopiesToggle) {
 				seconds seconds(level->m_workingTime + level->m_workingTime2);
-				labelText += fmt::format("Edit. Time (+cop.): {}h{}m{}s \n", duration_cast<hours>(seconds).count(), duration_cast<minutes>(seconds).count() % 60, seconds.count() % 60).c_str();
+				labelStringStream << fmt::format("Edit. Time (+cop.): {}h{}m{}s \n", duration_cast<hours>(seconds).count(), duration_cast<minutes>(seconds).count() % 60, seconds.count() % 60);
 			}
 
 			if (totalAttemptsToggle) {
 				int attempts = static_cast<int>(level->m_attempts);
-				labelText += fmt::format("Total Attempts: {}\n", attempts).c_str();
+				labelStringStream << fmt::format("Total Attempts: {}\n", attempts);
 			}
 
 			if (totalJumpsToggle) {
 				int jumps = static_cast<int>(level->m_jumps);
-				labelText += fmt::format("Total Jumps: {}\n", jumps).c_str();
+				labelStringStream << fmt::format("Total Jumps: {}\n", jumps);
 			}
 
 			if (clicksToggle) {
 				int clicks = static_cast<int>(level->m_clicks);
-				labelText += fmt::format("Clicks (best att.): {}\n", clicks).c_str();
+				labelStringStream << fmt::format("Clicks (best att.): {}\n", clicks);
 			}
 
 			if (attemptTimeToggle) {
 				int attempt_time = static_cast<int>(level->m_attemptTime);
 				seconds seconds(attempt_time);
-				labelText += fmt::format("Time (best att.): {}m{}s\n", duration_cast<minutes>(seconds).count() % 60, seconds.count() % 60).c_str();
+				labelStringStream << fmt::format("Time (best att.): {}m{}s\n", duration_cast<minutes>(seconds).count() % 60, seconds.count() % 60);
 			}
 
+			std::string labelText = labelStringStream.str();
+
 			// Display the label
-        	auto label = CCLabelBMFont::create(fmt::format("{}", labelText).c_str(), "bigFont.fnt");
+        	auto label = CCLabelBMFont::create(labelText.c_str(), "bigFont.fnt");
+			label->setID("level-info-label");
         	label->setPosition(winSize / 1.4);
 			label->setPositionX(100);
 			label->setScale(0.25);
