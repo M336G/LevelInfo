@@ -10,18 +10,18 @@ class $modify(LevelInfoLayer) {
 			return false;
 
 		// Get all the settings values
-		bool requestedStarsToggle = Mod::get()->getSettingValue<bool>("show-requested-stars");
-		bool featuredRankToggle = Mod::get()->getSettingValue<bool>("show-featured-rank");
-		bool objectCountToggle = Mod::get()->getSettingValue<bool>("show-object-count");
-		bool gameVersionToggle = Mod::get()->getSettingValue<bool>("show-game-version");
-		bool levelVersionToggle = Mod::get()->getSettingValue<bool>("show-level-version");
-		bool twoPlayerModeToggle = Mod::get()->getSettingValue<bool>("show-two-player-mode");
-		bool editorTimeToggle = Mod::get()->getSettingValue<bool>("show-editor-time");
-		bool editorTimeCopiesToggle = Mod::get()->getSettingValue<bool>("show-editor-time-copies");
-		bool totalAttemptsToggle = Mod::get()->getSettingValue<bool>("show-total-attempts");
-		bool totalJumpsToggle = Mod::get()->getSettingValue<bool>("show-total-jumps");
-		bool clicksToggle = Mod::get()->getSettingValue<bool>("show-clicks");
-		bool attemptTimeToggle = Mod::get()->getSettingValue<bool>("show-attempt-time");
+		auto requestedStarsToggle = Mod::get()->getSettingValue<bool>("show-requested-stars");
+		auto featuredRankToggle = Mod::get()->getSettingValue<bool>("show-featured-rank");
+		auto objectCountToggle = Mod::get()->getSettingValue<bool>("show-object-count");
+		auto gameVersionToggle = Mod::get()->getSettingValue<bool>("show-game-version");
+		auto levelVersionToggle = Mod::get()->getSettingValue<bool>("show-level-version");
+		auto twoPlayerModeToggle = Mod::get()->getSettingValue<bool>("show-two-player-mode");
+		auto editorTimeToggle = Mod::get()->getSettingValue<bool>("show-editor-time");
+		auto editorTimeCopiesToggle = Mod::get()->getSettingValue<bool>("show-editor-time-copies");
+		auto totalAttemptsToggle = Mod::get()->getSettingValue<bool>("show-total-attempts");
+		auto totalJumpsToggle = Mod::get()->getSettingValue<bool>("show-total-jumps");
+		auto clicksToggle = Mod::get()->getSettingValue<bool>("show-clicks");
+		auto attemptTimeToggle = Mod::get()->getSettingValue<bool>("show-attempt-time");
 
 		// Only get the corresponding values and display them if atleast one of the settings are true
 		if (requestedStarsToggle || featuredRankToggle || objectCountToggle || gameVersionToggle || levelVersionToggle || twoPlayerModeToggle || editorTimeToggle || editorTimeCopiesToggle || totalAttemptsToggle || totalJumpsToggle || clicksToggle || attemptTimeToggle) {
