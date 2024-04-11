@@ -1,3 +1,7 @@
+# Version 1.3.2
+- Code improvement
+- Make beta 23 the minimum version
+
 # Version 1.3.1
 - Code optimization
 - Added a string ID to the label
