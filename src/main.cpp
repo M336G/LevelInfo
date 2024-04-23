@@ -51,7 +51,7 @@ class $modify(LevelInfoLayer) {
 				case 0:
 				case 65535:
 					levelString = geode::prelude::ZipUtils::decompressString(level->m_levelString, false, 0);
-					labelString << fmt::format("Object Count: ~{}\n", std::to_string(std::ranges::count(levelString.begin(), levelString.end(), ';')));
+					labelString << fmt::format("Object Count: ~{}\n", std::to_string(std::count(levelString.begin(), levelString.end(), ';')));
 					break;
 				default:
 					labelString << fmt::format("Object Count: {}\n", std::to_string(level->m_objectCount));
@@ -63,25 +63,25 @@ class $modify(LevelInfoLayer) {
 			switch(level->m_gameVersion) {
 				case 22:
 					labelString << fmt::format("Game Version: 2.2\n");
-				break;
+					break;
 				case 21:
 					labelString << fmt::format("Game Version: 2.1\n");
-				break;
+					break;
 				case 20:
 					labelString << fmt::format("Game Version: 2.0\n");
-				break;
+					break;
 				case 19:
 					labelString << fmt::format("Game Version: 1.9\n");
-				break;
+					break;
 				case 18:
 					labelString << fmt::format("Game Version: 1.8\n");
-				break;
+					break;
 				case 10:
 					labelString << fmt::format("Game Version: 1.7\n");
-				break;
+					break;
 				default:
 					labelString << fmt::format("Game Version: Pre-1.7\n");
-				break;
+					break;
 			}
 		}
 
