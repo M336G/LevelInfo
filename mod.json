@@ -1,6 +1,6 @@
 {
   "geode": "2.0.0-beta.23",
-  "version": "v1.3.2",
+  "version": "v1.3.3",
   "gd": {
     "win": "2.204",
     "android": "2.205",
@@ -20,6 +20,17 @@
     "Interface"
   ],
   "settings": {
+    "text-size": {
+      "name": "Text size",
+      "description": "Set the size of the text that will be displayed",
+      "type": "float",
+      "default": 0.25,
+      "min": 0,
+      "max": 1,
+      "control": {
+        "slider": true
+      }
+    },
     "text-opacity": {
       "name": "Text opacity",
       "description": "Set the opacity of the text that will be displayed",

@@ -2,7 +2,7 @@
 
 class $modify(LevelInfoLayer) {
 	bool init(GJGameLevel* level, bool p1) {
-		if (!LevelInfoLayer::init(level, false))
+		if (!LevelInfoLayer::init(level, p1))
 			return false;
 
 		// Get all the settings values
@@ -22,10 +22,14 @@ class $modify(LevelInfoLayer) {
 		// If all of those values are false, don't display the label text
 		if (!requestedStarsToggle && !featuredRankToggle && !objectCountToggle && !gameVersionToggle && !levelVersionToggle && !twoPlayerModeToggle && !editorTimeToggle && !editorTimeCopiesToggle && !totalAttemptsToggle && !totalJumpsToggle && !clicksToggle && !attemptTimeToggle) return true;
 
+		// Get the text size defined by the user
+		auto textSize = geode::Mod::get()->getSettingValue<double>("text-size");
+		// If the text size is 0, don't display the label
+		if (textSize <= 0) return true;
+
 		// Get the text opacity defined by the user
 		auto textOpacity = geode::Mod::get()->getSettingValue<int64_t>("text-opacity");
-
-		// If the text opacity is 0, don't display the label text
+		// If the text opacity is 0, don't display the label
 		if (textOpacity <= 0) return true;
 
 		// Get the text color defined by the user
@@ -37,13 +41,9 @@ class $modify(LevelInfoLayer) {
 		std::stringstream labelString;
 			
 		// Here I define every stats, if they are enabled
-		if (requestedStarsToggle) {
-			labelString << fmt::format("Req. Difficulty: {}\n", level->m_starsRequested);
-		}
+		if (requestedStarsToggle) labelString << fmt::format("Req. Difficulty: {}\n", level->m_starsRequested);
 
-		if (featuredRankToggle) {
-			labelString << fmt::format("Featured Rank: {}\n", (level->m_featured != 0) ? std::to_string(level->m_featured) : "N/A");
-		}
+		if (featuredRankToggle) labelString << fmt::format("Featured Rank: {}\n", level->m_featured != 0 ? std::to_string(level->m_featured) : "N/A");
 
 		if (objectCountToggle) {
 			std::string levelString;
@@ -51,7 +51,11 @@ class $modify(LevelInfoLayer) {
 				case 0:
 				case 65535:
 					levelString = geode::prelude::ZipUtils::decompressString(level->m_levelString, false, 0);
-					labelString << fmt::format("Object Count: ~{}\n", std::to_string(std::count(levelString.begin(), levelString.end(), ';')));
+					#ifdef __APPLE__
+					labelString << fmt::format("Object Count: ~{}\n", std::count(levelString.begin(), levelString.end(), ';'));
+					#else
+					labelString << fmt::format("Object Count: ~{}\n", std::ranges::count(levelString.begin(), levelString.end(), ';'));
+					#endif
 					break;
 				default:
 					labelString << fmt::format("Object Count: {}\n", std::to_string(level->m_objectCount));
@@ -62,36 +66,32 @@ class $modify(LevelInfoLayer) {
 		if (gameVersionToggle) {
 			switch(level->m_gameVersion) {
 				case 22:
-					labelString << fmt::format("Game Version: 2.2\n");
+					labelString << "Game Version: 2.2\n";
 					break;
 				case 21:
-					labelString << fmt::format("Game Version: 2.1\n");
+					labelString << "Game Version: 2.1\n";
 					break;
 				case 20:
-					labelString << fmt::format("Game Version: 2.0\n");
+					labelString << "Game Version: 2.0\n";
 					break;
 				case 19:
-					labelString << fmt::format("Game Version: 1.9\n");
+					labelString << "Game Version: 1.9\n";
 					break;
 				case 18:
-					labelString << fmt::format("Game Version: 1.8\n");
+					labelString << "Game Version: 1.8\n";
 					break;
 				case 10:
-					labelString << fmt::format("Game Version: 1.7\n");
+					labelString << "Game Version: 1.7\n";
 					break;
 				default:
-					labelString << fmt::format("Game Version: Pre-1.7\n");
+					labelString << "Game Version: Pre-1.7\n";
 					break;
 			}
 		}
 
-		if (twoPlayerModeToggle) {
-			labelString << fmt::format("2 Player Mode: {}\n", level->m_twoPlayerMode);
-		}
+		if (twoPlayerModeToggle) labelString << fmt::format("2 Player Mode: {}\n", level->m_twoPlayerMode);
 
-		if (levelVersionToggle) {
-			labelString << fmt::format("Level Version: {}\n", level->m_levelVersion);
-		}
+		if (levelVersionToggle) labelString << fmt::format("Level Version: {}\n", level->m_levelVersion);
 
 		if (editorTimeToggle) {
 			std::chrono::seconds seconds(level->m_workingTime);
@@ -99,21 +99,15 @@ class $modify(LevelInfoLayer) {
 		}
 
 		if (editorTimeCopiesToggle) {
-			std::chrono::seconds seconds (level->m_workingTime + level->m_workingTime2);
+			std::chrono::seconds seconds(level->m_workingTime + level->m_workingTime2);
 			labelString << fmt::format("Edit. Time (+cop.): {}h{}m{}s \n", duration_cast<std::chrono::hours>(seconds).count(), duration_cast<std::chrono::minutes>(seconds).count() % 60, seconds.count() % 60);
 		}
 
-		if (totalAttemptsToggle) {
-			labelString << fmt::format("Total Attempts: {}\n", static_cast<int>(level->m_attempts));
-		}
+		if (totalAttemptsToggle) labelString << fmt::format("Total Attempts: {}\n", static_cast<int>(level->m_attempts));
 
-		if (totalJumpsToggle) {
-			labelString << fmt::format("Total Jumps: {}\n", static_cast<int>(level->m_jumps));
-		}
+		if (totalJumpsToggle) labelString << fmt::format("Total Jumps: {}\n", static_cast<int>(level->m_jumps));
 
-		if (clicksToggle) {
-			labelString << fmt::format("Clicks (best att.): {}\n", static_cast<int>(level->m_clicks));
-		}
+		if (clicksToggle) labelString << fmt::format("Clicks (best att.): {}\n", static_cast<int>(level->m_clicks));
 
 		if (attemptTimeToggle) {
 			std::chrono::seconds seconds(static_cast<int>(level->m_attemptTime));
@@ -122,12 +116,12 @@ class $modify(LevelInfoLayer) {
 
 		// Display the label
 		auto label = cocos2d::CCLabelBMFont::create(labelString.str().c_str(), "bigFont.fnt");
-		label->setID("level-info-label");
+		label->setID("level-info-label"_spr);
 		label->setPosition(winSize / 1.4);
 		label->setPositionX(100);
-		label->setScale(0.25);
-		label->setColor(textColor);
+		label->setScale(textSize);
 		label->setOpacity(static_cast<int64_t>(round(static_cast<double>(textOpacity) / 100 * 255)));
+		label->setColor(textColor);
 		this->addChild(label);
 		geode::log::info("Successfully displayed informations about the level '{}' by {}", level->m_levelName, level->m_creatorName);
 
