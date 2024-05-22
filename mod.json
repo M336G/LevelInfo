@@ -1,6 +1,6 @@
 {
   "geode": "2.0.0-beta.23",
-  "version": "v1.3.3",
+  "version": "v1.3.4",
   "gd": {
     "win": "2.204",
     "android": "2.205",
@@ -17,12 +17,13 @@
   },
   "tags": [
     "Utility",
-    "Interface"
+    "Interface",
+    "Customization"
   ],
   "settings": {
     "text-size": {
       "name": "Text size",
-      "description": "Set the size of the text that will be displayed",
+      "description": "Define the size of the text that will be displayed on a level's page",
       "type": "float",
       "default": 0.25,
       "min": 0,
@@ -33,7 +34,7 @@
     },
     "text-opacity": {
       "name": "Text opacity",
-      "description": "Set the opacity of the text that will be displayed",
+      "description": "Set the opacity of the text that will be displayed on a level's page",
       "type": "int",
       "default": 100,
       "min": 0,
@@ -44,73 +45,79 @@
     },
     "text-color": {
       "name": "Text color",
-      "description": "The color in which the text is displayed",
+      "description": "Set the color of the text that will be displayed on a level's page",
       "type": "color",
       "default": "#FFFFFF"
     },
     "show-requested-stars": {
       "name": "Requested Stars",
-      "description": "Displays the star difficulty requested by the creator",
+      "description": "Display the difficulty in stars/moons requested by the creator",
       "type": "bool",
       "default": true
     },
     "show-featured-rank": {
       "name": "Featured Rank",
-      "description": "Displays the featured rank of the level",
+      "description": "Display the featured rank of a level",
       "type": "bool",
       "default": true
     },
     "show-object-count": {
       "name": "Object Count",
-      "description": "Indicates how many objects are in the level (may be inaccurate for levels with more than 65535 objects)",
+      "description": "Display the amount of objects in a level (may be inaccurate for levels with more than 65535 objects)",
       "type": "bool",
       "default": true
     },
     "show-two-player-mode": {
-      "name": "2 Player mode",
-      "description": "Indicates if the level is using 2 player mode",
+      "name": "2-Player mode",
+      "description": "Indicate if the level is using 2-player mode",
       "type": "bool",
       "default": true
     },
     "show-game-version": {
       "name": "Game Version",
-      "description": "Display the game version in which the level was posted",
+      "description": "Indicate the version of the game in which the level was posted/updated",
       "type": "bool",
       "default": true
     },
     "show-level-version": {
       "name": "Level Version",
-      "description": "Displays the current version of a level",
+      "description": "Display the current version of a level (or the amount of updates a level received)",
+      "type": "bool",
+      "default": true
+    },
+    "show-original-level-id": {
+      "name": "Original Level",
+      "description": "Display the original level ID of a copied level",
       "type": "bool",
       "default": true
     },
     "show-editor-time": {
       "name": "Editor Time",
-      "description": "Shows how much time the creator(s) of the level spent in the editor",
+      "description": "Show how much time the creator(s) of a level spent in the editor",
       "type": "bool",
       "default": true
     },
     "show-editor-time-copies": {
       "name": "Editor Time (+copies)",
-      "description": "Shows how much time the creator(s) of the level spent in the editor (with copies)",
+      "description": "Show how much time the creator(s) of a level spent in the editorr (including previous copies)",
       "type": "bool",
       "default": true
     },
     "show-total-attempts": {
-      "name": "Attempts",
-      "description": "Show how many attempts you spent on the level",
+      "name": "Total Attempts",
+      "description": "Indicate how many attempts you spent on a level",
       "type": "bool",
       "default": true
     },
     "show-total-jumps": {
-      "name": "Jumps",
-      "description": "Show how many times you jumped in the level",
+      "name": "Total Jumps",
+      "description": "Show your total amount of jumps in a level",
       "type": "bool",
       "default": true
     },
     "show-clicks": {
-      "name": "Clicks",
-      "description": "Show how many times you clicked during your best attempt",
+      "name": "Total Clicks (best attempt)",
+      "description": "Show how many times you clicked on your best attempt on a level",
       "type": "bool",
       "default": true
     },
