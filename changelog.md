@@ -1,3 +1,6 @@
+# Version 1.3.5
+- Port to Geode 3.0.0-beta.1
+
 # Version 1.3.4
 - Add the original level ID setting
 - Reduced "Edit. Time" and "Edit. Time (+cop.)" to "Editor" and "Edit. (+cop.)"
