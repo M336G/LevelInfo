@@ -46,7 +46,7 @@ class $modify(LevelInfoLayer) {
 			switch(level->m_objectCount) {
 				case 0:
 				case 65535:
-					levelString = geode::prelude::ZipUtils::decompressString(level->m_levelString, false, 0);
+					levelString = cocos2d::ZipUtils::decompressString(level->m_levelString, false, 0);
 
 					#ifdef __APPLE__
 					labelString << fmt::format("Object Count: ~{}\n", std::count(levelString.begin(), levelString.end(), ';'));

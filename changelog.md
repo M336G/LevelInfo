@@ -1,5 +1,8 @@
+# Version 1.3.6
+- Fix macOS compatibility
+
 # Version 1.3.5
-- Port to Geode 3.0.0-beta.1
+- Port the mod to 2.206
 
 # Version 1.3.4
 - Add the original level ID setting
