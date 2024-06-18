@@ -1,4 +1,5 @@
 #include <Geode/modify/LevelInfoLayer.hpp>
+#include <Geode/cocos/support/zip_support/ZipUtils.h>
 
 class $modify(LevelInfoLayer) {
 	bool init(GJGameLevel* level, bool p1) {
@@ -43,6 +44,7 @@ class $modify(LevelInfoLayer) {
 
 		if (objectCountToggle) {
 			std::string levelString;
+			
 			switch(level->m_objectCount) {
 				case 0:
 				case 65535:
