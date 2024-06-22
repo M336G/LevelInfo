@@ -1,12 +1,14 @@
 # Version 1.3.6
-- Port the mod to 2.206 (Geode 3.0.0)
+- Add the LDM Existence setting
+- Fixed tags not showing up
+- Update Geode version to v3.0.0
 
 # Version 1.3.5
-- Port the mod to Geode 3.0.0-beta.1
-- Temporarily remove macOS compatibility
+- Ported the mod to Geode 3.0.0-beta.1
+- Temporarily removed macOS compatibility
 
 # Version 1.3.4
-- Add the original level ID setting
+- Added the original level ID setting
 - Reduced "Edit. Time" and "Edit. Time (+cop.)" to "Editor" and "Edit. (+cop.)"
 - Added the "customization" tag
 - Improved settings' description
@@ -44,7 +46,7 @@
 
 # Version 1.2.1
 - Optimized the code for many things: Feature state, Object count and Game version (Thanks VolcaroCham!)
-- Levels before 1.7 will be labeled "Pre-1.7"
+- Show levels made before 1.7 as "Pre-1.7"
 
 # Version 1.2.0
 - Added the game version settings/stats

@@ -1,5 +1,4 @@
 #include <Geode/modify/LevelInfoLayer.hpp>
-#include <Geode/cocos/support/zip_support/ZipUtils.h>
 
 class $modify(LevelInfoLayer) {
 	bool init(GJGameLevel* level, bool p1) {
@@ -12,6 +11,7 @@ class $modify(LevelInfoLayer) {
 		const auto objectCountToggle = geode::Mod::get()->getSettingValue<bool>("show-object-count");
 		const auto gameVersionToggle = geode::Mod::get()->getSettingValue<bool>("show-game-version");
 		const auto levelVersionToggle = geode::Mod::get()->getSettingValue<bool>("show-level-version");
+		const auto ldmExistence = geode::Mod::get()->getSettingValue<bool>("show-ldm-existence");
 		const auto originalLevelToggle = geode::Mod::get()->getSettingValue<bool>("show-original-level-id");
 		const auto twoPlayerModeToggle = geode::Mod::get()->getSettingValue<bool>("show-two-player-mode");
 		const auto editorTimeToggle = geode::Mod::get()->getSettingValue<bool>("show-editor-time");
@@ -91,6 +91,8 @@ class $modify(LevelInfoLayer) {
 		if (twoPlayerModeToggle) labelString << fmt::format("2-Player Mode: {}\n", level->m_twoPlayerMode);
 
 		if (levelVersionToggle) labelString << fmt::format("Level Version: {}\n", level->m_levelVersion);
+
+		if (ldmExistence) labelString << fmt::format("LDM Existence: {}\n", level->m_lowDetailMode);
 		// Yes.
 		if (originalLevelToggle) labelString << fmt::format("Original ID: {}\n", (static_cast<int>(level->m_originalLevel) == static_cast<int>(level->m_levelID) || static_cast<int>(level->m_originalLevel) == 0) ? "N/A" : std::to_string(static_cast<int>(level->m_originalLevel)));
 

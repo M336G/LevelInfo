@@ -17,9 +17,9 @@
     "url": "https://github.com/M336G/LevelInfo/issues"
   },
   "tags": [
-    "Utility",
-    "Interface",
-    "Customization"
+    "utility",
+    "interface",
+    "customization"
   ],
   "settings": {
     "text-size": {
@@ -83,6 +83,12 @@
     "show-level-version": {
       "name": "Level Version",
       "description": "Display the current version of a level (or the amount of updates a level received)",
+      "type": "bool",
+      "default": true
+    },
+    "show-ldm-existence": {
+      "name": "Low Detail Mode Existence",
+      "description": "Indicates whether a Low Detail Mode exists or not on a level",
       "type": "bool",
       "default": true
     },
