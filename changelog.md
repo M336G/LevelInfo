@@ -1,7 +1,7 @@
 # Version 1.3.6
-- Add the LDM Existence setting
+- Added the LDM Existence setting
 - Fixed tags not showing up
-- Update Geode version to v3.0.0
+- Updated Geode version to v3.0.0
 
 # Version 1.3.5
 - Ported the mod to Geode 3.0.0-beta.1
