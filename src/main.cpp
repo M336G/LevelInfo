@@ -1,11 +1,30 @@
 #include <Geode/modify/LevelInfoLayer.hpp>
 
-#include "LevelInfoSettingsManager.hpp"
-
 class $modify(LevelInfoLayer) {
     public:
         struct Fields {
             cocos2d::CCLabelBMFont* label = cocos2d::CCLabelBMFont::create("Loading...", "bigFont.fnt");
+            
+            // Get all the settings values
+	        bool requestedStarsToggle = geode::Mod::get()->getSettingValue<bool>("show-requested-stars");
+	        bool featuredRankToggle = geode::Mod::get()->getSettingValue<bool>("show-featured-rank");
+	        bool objectCountToggle = geode::Mod::get()->getSettingValue<bool>("show-object-count");
+	        bool gameVersionToggle = geode::Mod::get()->getSettingValue<bool>("show-game-version");
+	        bool levelVersionToggle = geode::Mod::get()->getSettingValue<bool>("show-level-version");
+	        bool ldmExistence = geode::Mod::get()->getSettingValue<bool>("show-ldm-existence");
+	        bool originalLevelToggle = geode::Mod::get()->getSettingValue<bool>("show-original-level-id");
+	        bool twoPlayerModeToggle = geode::Mod::get()->getSettingValue<bool>("show-two-player-mode");
+	        bool editorTimeToggle = geode::Mod::get()->getSettingValue<bool>("show-editor-time");
+	        bool editorTimeCopiesToggle = geode::Mod::get()->getSettingValue<bool>("show-editor-time-copies");
+	        bool totalAttemptsToggle = geode::Mod::get()->getSettingValue<bool>("show-total-attempts");
+	        bool totalJumpsToggle = geode::Mod::get()->getSettingValue<bool>("show-total-jumps");
+	        bool clicksToggle = geode::Mod::get()->getSettingValue<bool>("show-clicks");
+	        bool attemptTimeToggle = geode::Mod::get()->getSettingValue<bool>("show-attempt-time");
+
+            double textSize = geode::Mod::get()->getSettingValue<double>("text-size");
+            int64_t textOpacity = geode::Mod::get()->getSettingValue<int64_t>("text-opacity");
+            cocos2d::ccColor3B textColor = geode::Mod::get()->getSettingValue<cocos2d::ccColor3B>("text-color");
+            cocos2d::CCSize winSize = cocos2d::CCDirector::get()->getWinSize();
         };
 
     bool init(GJGameLevel* level, bool p1) {
@@ -13,31 +32,31 @@ class $modify(LevelInfoLayer) {
             return false;
 
         // If all of those values are false, don't display the label text
-        if (!LevelInfoSettingsManager::requestedStarsToggle && 
-		!LevelInfoSettingsManager::featuredRankToggle && 
-		!LevelInfoSettingsManager::objectCountToggle && 
-		!LevelInfoSettingsManager::gameVersionToggle && 
-		!LevelInfoSettingsManager::levelVersionToggle && 
-		!LevelInfoSettingsManager::twoPlayerModeToggle && 
-		!LevelInfoSettingsManager::editorTimeToggle && 
-		!LevelInfoSettingsManager::editorTimeCopiesToggle && 
-		!LevelInfoSettingsManager::totalAttemptsToggle && 
-		!LevelInfoSettingsManager::totalJumpsToggle && 
-		!LevelInfoSettingsManager::clicksToggle && 
-		!LevelInfoSettingsManager::attemptTimeToggle) return true;
+        if (!m_fields->requestedStarsToggle && 
+		!m_fields->featuredRankToggle && 
+		!m_fields->objectCountToggle && 
+		!m_fields->gameVersionToggle && 
+		!m_fields->levelVersionToggle && 
+		!m_fields->twoPlayerModeToggle && 
+		!m_fields->editorTimeToggle && 
+		!m_fields->editorTimeCopiesToggle && 
+		!m_fields->totalAttemptsToggle && 
+		!m_fields->totalJumpsToggle && 
+		!m_fields->clicksToggle && 
+		!m_fields->attemptTimeToggle) return true;
 
         // If any of those is 0, don't display the label text
-        if (LevelInfoSettingsManager::textSize <= 0) return true;
+        if (m_fields->textSize <= 0) return true;
 
-        if (LevelInfoSettingsManager::textOpacity <= 0) return true;
+        if (m_fields->textOpacity <= 0) return true;
 
 		// Display label text otherwise
         m_fields->label->setID("level-info-label"_spr);
-        m_fields->label->setPosition(LevelInfoSettingsManager::winSize / 1.4);
+        m_fields->label->setPosition(m_fields->winSize / 1.4);
         m_fields->label->setPositionX(110);
-        m_fields->label->setScale(LevelInfoSettingsManager::textSize);
-        m_fields->label->setOpacity(static_cast<int64_t>(round(static_cast<double>(LevelInfoSettingsManager::textOpacity) / 100 * 255)));
-        m_fields->label->setColor(LevelInfoSettingsManager::textColor);
+        m_fields->label->setScale(m_fields->textSize);
+        m_fields->label->setOpacity(static_cast<int64_t>(round(static_cast<double>(m_fields->textOpacity) / 100 * 255)));
+        m_fields->label->setColor(m_fields->textColor);
         this->addChild(m_fields->label);
 
         // If the level is already downloaded, display the stats
@@ -63,11 +82,11 @@ class $modify(LevelInfoLayer) {
         std::stringstream labelString;
 
         // Here I define every stats, if they are enabled
-        if (LevelInfoSettingsManager::requestedStarsToggle) labelString << fmt::format("Req. Difficulty: {}\n", level->m_starsRequested);
+        if (m_fields->requestedStarsToggle) labelString << fmt::format("Req. Difficulty: {}\n", level->m_starsRequested);
         
-		if (LevelInfoSettingsManager::featuredRankToggle) labelString << fmt::format("Featured Rank: {}\n", level->m_featured != 0 ? std::to_string(level->m_featured) : "N/A");
+		if (m_fields->featuredRankToggle) labelString << fmt::format("Featured Rank: {}\n", level->m_featured != 0 ? std::to_string(level->m_featured) : "N/A");
 
-        if (LevelInfoSettingsManager::objectCountToggle) {
+        if (m_fields->objectCountToggle) {
             std::string levelString;
             switch(level->m_objectCount) {
                 case 0:
@@ -85,7 +104,7 @@ class $modify(LevelInfoLayer) {
             }
         }
 
-        if (LevelInfoSettingsManager::gameVersionToggle) {
+        if (m_fields->gameVersionToggle) {
             switch(level->m_gameVersion) {
                 case 22:
                     labelString << "Game Version: 2.2\n";
@@ -111,31 +130,31 @@ class $modify(LevelInfoLayer) {
             }
         }
 
-        if (LevelInfoSettingsManager::twoPlayerModeToggle) labelString << fmt::format("2-Player Mode: {}\n", level->m_twoPlayerMode);
+        if (m_fields->twoPlayerModeToggle) labelString << fmt::format("2-Player Mode: {}\n", level->m_twoPlayerMode);
         
-		if (LevelInfoSettingsManager::levelVersionToggle) labelString << fmt::format("Level Version: {}\n", level->m_levelVersion);
+		if (m_fields->levelVersionToggle) labelString << fmt::format("Level Version: {}\n", level->m_levelVersion);
         
-		if (LevelInfoSettingsManager::ldmExistence) labelString << fmt::format("LDM Existence: {}\n", level->m_lowDetailMode);
+		if (m_fields->ldmExistence) labelString << fmt::format("LDM Existence: {}\n", level->m_lowDetailMode);
         
-		if (LevelInfoSettingsManager::originalLevelToggle) labelString << fmt::format("Original ID: {}\n", (static_cast<int>(level->m_originalLevel) == static_cast<int>(level->m_levelID) || static_cast<int>(level->m_originalLevel) == 0) ? "N/A" : std::to_string(static_cast<int>(level->m_originalLevel)));
+		if (m_fields->originalLevelToggle) labelString << fmt::format("Original ID: {}\n", (static_cast<int>(level->m_originalLevel) == static_cast<int>(level->m_levelID) || static_cast<int>(level->m_originalLevel) == 0) ? "N/A" : std::to_string(static_cast<int>(level->m_originalLevel)));
 
-        if (LevelInfoSettingsManager::editorTimeToggle) {
+        if (m_fields->editorTimeToggle) {
             std::chrono::seconds seconds(level->m_workingTime);
             labelString << fmt::format("Editor: {}h{}m{}s \n", duration_cast<std::chrono::hours>(seconds).count(), duration_cast<std::chrono::minutes>(seconds).count() % 60, seconds.count() % 60);
         }
 
-        if (LevelInfoSettingsManager::editorTimeCopiesToggle) {
+        if (m_fields->editorTimeCopiesToggle) {
             std::chrono::seconds seconds(level->m_workingTime + level->m_workingTime2);
             labelString << fmt::format("Edit. (+cop.): {}h{}m{}s \n", duration_cast<std::chrono::hours>(seconds).count(), duration_cast<std::chrono::minutes>(seconds).count() % 60, seconds.count() % 60);
         }
 
-        if (LevelInfoSettingsManager::totalAttemptsToggle) labelString << fmt::format("Total Attempts: {}\n", static_cast<int>(level->m_attempts));
+        if (m_fields->totalAttemptsToggle) labelString << fmt::format("Total Attempts: {}\n", static_cast<int>(level->m_attempts));
         
-		if (LevelInfoSettingsManager::totalJumpsToggle) labelString << fmt::format("Total Jumps: {}\n", static_cast<int>(level->m_jumps));
+		if (m_fields->totalJumpsToggle) labelString << fmt::format("Total Jumps: {}\n", static_cast<int>(level->m_jumps));
         
-		if (LevelInfoSettingsManager::clicksToggle) labelString << fmt::format("Clicks (best att.): {}\n", static_cast<int>(level->m_clicks));
+		if (m_fields->clicksToggle) labelString << fmt::format("Clicks (best att.): {}\n", static_cast<int>(level->m_clicks));
         
-		if (LevelInfoSettingsManager::attemptTimeToggle) {
+		if (m_fields->attemptTimeToggle) {
             std::chrono::seconds seconds(static_cast<int>(level->m_attemptTime));
             labelString << fmt::format("Time (best att.): {}m{}s\n", duration_cast<std::chrono::minutes>(seconds).count() % 60, seconds.count() % 60);
         }
