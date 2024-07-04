@@ -1,3 +1,7 @@
+# Version 1.3.7
+- Fixed stats being incorrect if the level took too long to load or was not downloaded yet
+- Code improvements/rewrite
+
 # Version 1.3.6
 - Added the LDM Existence setting
 - Fixed tags not showing up
