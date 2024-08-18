@@ -5,12 +5,13 @@ A simple and customizable mod that displays information about the level you are 
 Pretty much everything can be enabled/disabled, even the text color can be customized!
 
 ----------
-### Why did you make this?
+### Want to help?
 
-I was bored, so I made this for fun. I also wanted to learn a bit about C++, since I had never tried this language before (which also means the code might be unoptimized, so feel free to make pull requests, it would really help!).
+Feel free to open a Pull Request on GitHub!
 
 ----------
 ### Special Thanks
 
 Thanks to dankmeme for helping me figure out some mistakes I made in my code.
+
 Thanks freadfries for the logo!
