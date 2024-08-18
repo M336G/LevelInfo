@@ -7,11 +7,11 @@ Pretty much everything can be enabled/disabled, even the text color can be custo
 ----------
 ### Want to help?
 
-Feel free to open a Pull Request on GitHub!
+Feel free to open a [Pull Request](https://github.com/M336G/LevelInfo/pulls) on GitHub!
 
 ----------
 ### Special Thanks
 
-Thanks to dankmeme for helping me figure out some mistakes I made in my code.
+Thanks to [dankmeme](https://github.com/dankmeme01/) for helping me figure out some mistakes I made in my code.
 
-Thanks freadfries for the logo!
+Thanks [freadfries](https://www.youtube.com/channel/UCKVxWc55eY-yFztOVruajBw) for the logo!
