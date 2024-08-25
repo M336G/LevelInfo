@@ -1,5 +1,7 @@
 #include <Geode/modify/LevelInfoLayer.hpp>
 
+// TODO: Replace "Loading..." text by a Loading Circle
+
 class $modify(LevelInfoLayer) {
     struct Fields {
         cocos2d::CCLabelBMFont* m_label = cocos2d::CCLabelBMFont::create("Loading...", "bigFont.fnt");
@@ -59,14 +61,8 @@ class $modify(LevelInfoLayer) {
         m_fields->m_label->setColor(m_fields->m_textColor);
         this->addChild(m_fields->m_label);
         
-        /*
-            TODO: Find ways to:
-            - If downloaded + loaded: show stats directly (done)
-            - If downloaded but not loaded: show a Loading Circle then show stats (currently only displays label)
-            - If not downloaded: show a Loading Circle then show stats (currently only displays label)
-        */
        // If the level is already downloaded, display the stats
-        if (this->m_playSprite->isVisible()) displayLabel(level);
+        if (level->m_levelString != "") displayLabel(level);
 
         return true;
     };
