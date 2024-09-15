@@ -41,6 +41,28 @@
       "type": "title",
       "name": "Text Settings"
     },
+    "text-width-offset": {
+      "name": "Text X offset",
+      "description": "Set the X-axis' offset of the text that will be displayed on a level's page",
+      "type": "int",
+      "default": 0,
+      "min": -1000,
+      "max": 1000,
+      "control": {
+        "slider": true
+      }
+    },
+    "text-height-offset": {
+      "name": "Text Y offset",
+      "description": "Set the Y-axis' offset of the text that will be displayed on a level's page",
+      "type": "int",
+      "default": 0,
+      "min": -1000,
+      "max": 1000,
+      "control": {
+        "slider": true
+      }
+    },
     "text-size": {
       "name": "Text size",
       "description": "Define the size of the text that will be displayed on a level's page",
@@ -69,7 +91,7 @@
       "type": "color",
       "default": "#FFFFFF"
     },
-    
+
     "toggle-settings": {
       "type": "title",
       "name": "Toggle Settings"

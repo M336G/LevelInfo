@@ -4,6 +4,13 @@
 
 class $modify(LevelInfoLayer) {
     struct Fields {
+        int64_t m_textWidthOffset = geode::Mod::get()->getSettingValue<int64_t>("text-width-offset");
+        int64_t m_textHeightOffset = geode::Mod::get()->getSettingValue<int64_t>("text-height-offset");
+        double m_textSize = geode::Mod::get()->getSettingValue<double>("text-size");
+        int64_t m_textOpacity = geode::Mod::get()->getSettingValue<int64_t>("text-opacity");
+        cocos2d::ccColor3B m_textColor = geode::Mod::get()->getSettingValue<cocos2d::ccColor3B>("text-color");
+        cocos2d::CCSize m_winSize = cocos2d::CCDirector::get()->getWinSize();
+
         cocos2d::CCLabelBMFont* m_label = cocos2d::CCLabelBMFont::create("Loading...", "bigFont.fnt");
             
         // Get all the settings values
@@ -21,11 +28,6 @@ class $modify(LevelInfoLayer) {
 	    bool m_totalJumpsToggle = geode::Mod::get()->getSettingValue<bool>("show-total-jumps");
 	    bool m_clicksToggle = geode::Mod::get()->getSettingValue<bool>("show-clicks");
 	    bool m_attemptTimeToggle = geode::Mod::get()->getSettingValue<bool>("show-attempt-time");
-
-        double m_textSize = geode::Mod::get()->getSettingValue<double>("text-size");
-        int64_t m_textOpacity = geode::Mod::get()->getSettingValue<int64_t>("text-opacity");
-        cocos2d::ccColor3B m_textColor = geode::Mod::get()->getSettingValue<cocos2d::ccColor3B>("text-color");
-        cocos2d::CCSize m_winSize = cocos2d::CCDirector::get()->getWinSize();
     };
     
     bool showInfoLabel() {
@@ -54,8 +56,8 @@ class $modify(LevelInfoLayer) {
         if (!showInfoLabel()) return true;
 
         m_fields->m_label->setID("level-info-label"_spr);
-        m_fields->m_label->setPosition(m_fields->m_winSize / 1.4);
-        m_fields->m_label->setPositionX(110);
+        m_fields->m_label->setPositionX(m_fields->m_winSize.width * 0.2 + m_fields->m_textWidthOffset);
+        m_fields->m_label->setPositionY(m_fields->m_winSize.height * 0.7 + m_fields->m_textHeightOffset);
         m_fields->m_label->setScale(m_fields->m_textSize);
         m_fields->m_label->setOpacity(static_cast<int64_t>(round(static_cast<double>(m_fields->m_textOpacity) / 100 * 255)));
         m_fields->m_label->setColor(m_fields->m_textColor);
