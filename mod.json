@@ -37,6 +37,10 @@
     }
   ],
   "settings": {
+    "text-settings-title": {
+      "type": "title",
+      "name": "Text Settings"
+    },
     "text-size": {
       "name": "Text size",
       "description": "Define the size of the text that will be displayed on a level's page",
@@ -64,6 +68,11 @@
       "description": "Set the color of the text that will be displayed on a level's page",
       "type": "color",
       "default": "#FFFFFF"
+    },
+    
+    "toggle-settings": {
+      "type": "title",
+      "name": "Toggle Settings"
     },
     "show-requested-stars": {
       "name": "Requested Stars",
