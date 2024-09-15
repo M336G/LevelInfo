@@ -1,3 +1,8 @@
+# Version 1.3.8
+- Improved the text's scaling system
+- Enhanced mod's settings
+- Added colors to the mod's description
+
 # Version 1.3.7
 - Fixed stats being incorrect if the level took too long to load or was not downloaded yet
 - Code improvements/rewrite
