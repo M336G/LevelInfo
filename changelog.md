@@ -1,3 +1,6 @@
+# Version 1.3.9
+- Ported the mod to Geode 4.0.0-beta.1 (GD 2.2074)
+
 # Version 1.3.8
 - Improved the text's scaling system
 - Enhanced mod's settings
