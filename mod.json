@@ -27,12 +27,12 @@
     {
       "id": "m336.modbadgeinfo",
       "version": ">=1.1.0",
-      "importance": "recommended"
+      "importance": "suggested"
     },
     {
       "id": "m336.autoleaderboard",
       "version": ">=1.0.0",
-      "importance": "recommended"
+      "importance": "suggested"
     }
   ],
   "settings": {
