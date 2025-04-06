@@ -1,3 +1,7 @@
+# Version 1.3.10
+- Added iOS compatibility (still experimental)
+- Fixed the mod downloading AutoLeaderboard & Mod Badge Info even though they aren't required
+
 # Version 1.3.9
 - Ported the mod to Geode 4.0.0-beta.1 (GD 2.2074)
 
