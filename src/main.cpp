@@ -44,6 +44,7 @@ class $modify(LevelInfoLayer) {
 		!m_fields->m_totalJumpsToggle && 
 		!m_fields->m_clicksToggle && 
 		!m_fields->m_attemptTimeToggle) return false;
+
         // If any of those is 0, don't display the label text
         else if (m_fields->m_textSize <= 0 || m_fields->m_textOpacity <= 0) return false;
 
@@ -51,9 +52,11 @@ class $modify(LevelInfoLayer) {
     };
 
     bool init(GJGameLevel* level, bool challenge) {
-        if (!LevelInfoLayer::init(level, challenge)) return false;
+        if (!LevelInfoLayer::init(level, challenge))
+            return false;
 
-        if (!showInfoLabel()) return true;
+        if (!showInfoLabel())
+            return true;
 
         m_fields->m_label->setID("level-info-label"_spr);
         m_fields->m_label->setPositionX(m_fields->m_winSize.width * 0.2 + m_fields->m_textWidthOffset);
@@ -63,8 +66,9 @@ class $modify(LevelInfoLayer) {
         m_fields->m_label->setColor(m_fields->m_textColor);
         this->addChild(m_fields->m_label);
         
-       // If the level is already downloaded, display the stats
-        if (level->m_levelString != "") displayLabel(level);
+        // If the level is already downloaded, display the stats
+        if (level->m_levelString != "")
+            displayLabel(level);
 
         return true;
     };
@@ -72,28 +76,42 @@ class $modify(LevelInfoLayer) {
     void levelDownloadFinished(GJGameLevel *level) {
 		LevelInfoLayer::levelDownloadFinished(level);
 
-		if (showInfoLabel()) displayLabel(level);
-		
+		if (showInfoLabel())
+            displayLabel(level);
     };
 
 	void displayLabel(GJGameLevel* level) {
         std::stringstream labelString;
 
         // Here I define every stats, if they are enabled
-        if (m_fields->m_requestedStarsToggle) labelString << fmt::format("Req. Difficulty: {}\n", level->m_starsRequested);
+        if (m_fields->m_requestedStarsToggle)
+            labelString << fmt::format("Req. Difficulty: {}\n", level->m_starsRequested);
         
-		if (m_fields->m_featuredRankToggle) labelString << fmt::format("Featured Rank: {}\n", level->m_featured != 0 ? std::to_string(level->m_featured) : "N/A");
+		if (m_fields->m_featuredRankToggle)
+            labelString << fmt::format("Featured Rank: {}\n", level->m_featured != 0 ? std::to_string(level->m_featured) : "N/A");
 
         if (m_fields->m_objectCountToggle) {
             std::string levelString;
             switch(level->m_objectCount) {
                 case 0:
                 case 65535:
-                    levelString = cocos2d::ZipUtils::decompressString(level->m_levelString, false, 0);
+                    levelString = cocos2d::ZipUtils::decompressString(
+                        level->m_levelString,
+                        false,
+                        0
+                    );
                     #ifdef __APPLE__
-                    labelString << fmt::format("Object Count: ~{}\n", std::count(levelString.begin(), levelString.end(), ';'));
+                    labelString << fmt::format("Object Count: ~{}\n", std::count(
+                        levelString.begin(),
+                        levelString.end(),
+                        ';'
+                    ));
                     #else
-                    labelString << fmt::format("Object Count: ~{}\n", std::ranges::count(levelString.begin(), levelString.end(), ';'));
+                    labelString << fmt::format("Object Count: ~{}\n", std::ranges::count(
+                        levelString.begin(),
+                        levelString.end(),
+                        ';'
+                    ));
                     #endif
                     break;
                 default:
@@ -128,13 +146,17 @@ class $modify(LevelInfoLayer) {
             }
         }
 
-        if (m_fields->m_twoPlayerModeToggle) labelString << fmt::format("2-Player Mode: {}\n", level->m_twoPlayerMode);
+        if (m_fields->m_twoPlayerModeToggle)
+            labelString << fmt::format("2-Player Mode: {}\n", level->m_twoPlayerMode);
         
-		if (m_fields->m_levelVersionToggle) labelString << fmt::format("Level Version: {}\n", level->m_levelVersion);
+		if (m_fields->m_levelVersionToggle)
+            labelString << fmt::format("Level Version: {}\n", level->m_levelVersion);
         
-		if (m_fields->m_ldmExistence) labelString << fmt::format("LDM Existence: {}\n", level->m_lowDetailMode);
+		if (m_fields->m_ldmExistence)
+            labelString << fmt::format("LDM Existence: {}\n", level->m_lowDetailMode);
         
-		if (m_fields->m_originalLevelToggle) labelString << fmt::format("Original ID: {}\n", (static_cast<int>(level->m_originalLevel) == static_cast<int>(level->m_levelID) || static_cast<int>(level->m_originalLevel) == 0) ? "N/A" : std::to_string(static_cast<int>(level->m_originalLevel)));
+		if (m_fields->m_originalLevelToggle)
+            labelString << fmt::format("Original ID: {}\n", (static_cast<int>(level->m_originalLevel) == static_cast<int>(level->m_levelID) || static_cast<int>(level->m_originalLevel) == 0) ? "N/A" : std::to_string(static_cast<int>(level->m_originalLevel)));
 
         if (m_fields->m_editorTimeToggle) {
             std::chrono::seconds seconds(level->m_workingTime);
@@ -146,11 +168,14 @@ class $modify(LevelInfoLayer) {
             labelString << fmt::format("Edit. (+cop.): {}h{}m{}s \n", duration_cast<std::chrono::hours>(seconds).count(), duration_cast<std::chrono::minutes>(seconds).count() % 60, seconds.count() % 60);
         }
 
-        if (m_fields->m_totalAttemptsToggle) labelString << fmt::format("Total Attempts: {}\n", static_cast<int>(level->m_attempts));
+        if (m_fields->m_totalAttemptsToggle)
+            labelString << fmt::format("Total Attempts: {}\n", static_cast<int>(level->m_attempts));
         
-		if (m_fields->m_totalJumpsToggle) labelString << fmt::format("Total Jumps: {}\n", static_cast<int>(level->m_jumps));
+		if (m_fields->m_totalJumpsToggle)
+            labelString << fmt::format("Total Jumps: {}\n", static_cast<int>(level->m_jumps));
         
-		if (m_fields->m_clicksToggle) labelString << fmt::format("Clicks (best att.): {}\n", static_cast<int>(level->m_clicks));
+		if (m_fields->m_clicksToggle)
+            labelString << fmt::format("Clicks (best att.): {}\n", static_cast<int>(level->m_clicks));
         
 		if (m_fields->m_attemptTimeToggle) {
             std::chrono::seconds seconds(static_cast<int>(level->m_attemptTime));
