@@ -10,8 +10,7 @@
   "id": "m336.levelinfo",
   "name": "Level Info",
   "developer": "M336",
-  "description": "A simple and customizable mod that displays information about the level you are on in Geometry Dash",
-  "repository": "https://github.com/M336G/LevelInfo",
+  "description": "Shows information about the level you are on!",
   "links": {
     "source": "https://github.com/M336G/LevelInfo"
   },
@@ -24,18 +23,12 @@
     "interface",
     "customization"
   ],
-  "dependencies": [
-    {
-      "id": "m336.modbadgeinfo",
+  "dependencies": {
+    "m336.modbadgeinfo": {
       "version": ">=1.1.0",
       "importance": "suggested"
-    },
-    {
-      "id": "m336.autoleaderboard",
-      "version": ">=1.0.0",
-      "importance": "suggested"
     }
-  ],
+  },
   "settings": {
     "text-settings-title": {
       "type": "title",
