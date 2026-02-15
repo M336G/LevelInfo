@@ -1,5 +1,5 @@
 {
-  "geode": "5.0.0-alpha.1",
+  "geode": "5.0.0-beta.1",
   "version": "v1.3.10",
 	"gd": {
 		"win": "2.2081",
@@ -25,6 +25,14 @@
   ],
   "dependencies": {
     "m336.modbadgeinfo": {
+      "version": ">=1.1.0",
+      "importance": "suggested"
+    },
+    "m336.show-touches": {
+      "version": ">=1.0.0",
+      "importance": "suggested"
+    },
+    "m336.retry-on-play-layer": {
       "version": ">=1.1.0",
       "importance": "suggested"
     }
