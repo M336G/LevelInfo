@@ -1,4 +1,5 @@
 #include <Geode/modify/LevelInfoLayer.hpp>
+#include "ModManager.hpp"
 
 // TODO: Replace "Loading..." text by a Loading Circle
 
@@ -162,44 +163,44 @@ class $modify(LevelInfoLayer) {
             labelString << fmt::format("LDM Existence: {}\n", level->m_lowDetailMode);
         
         if (m_fields->m_sent) {
-            const std::string placeholder = "Sent: Loading...";
-            labelString << placeholder << "\n";
+            auto cached = ModManager::getLevelFromSentCache(level->m_levelID);
 
-            auto req = geode::utils::web::WebRequest();
+            if (cached.has_value()) {
+                labelString << fmt::format("Sent: {}\n", cached.value());
+            } else {
+                const std::string placeholder = "Sent: Loading...";
+                labelString << placeholder << "\n";
+                
+                auto req = geode::utils::web::WebRequest();
+                auto levelID = static_cast<int>(level->m_levelID);
 
-            // This will call SendDB's API to know if the level was sent or not. The
-            // actual sent field will be updated after the request is completed
-            m_fields->m_listener.spawn(
-                req.get(fmt::format("https://api.senddb.dev/api/v1/level/{}", level->m_levelID)),
-                [this, placeholder](geode::utils::web::WebResponse res) {
-                    matjson::Value body = res.json().unwrapOrDefault();
+                // This will call SendDB's API to know if the level was sent or not. The
+                // actual sent field will be updated after the request is completed
+                m_fields->m_listener.spawn(
+                    req.get(fmt::format("https://api.senddb.dev/api/v1/level/{}", levelID)),
+                    [this, placeholder, levelID](geode::utils::web::WebResponse res) {
+                        matjson::Value body = res.json().unwrapOrDefault();
 
-                    std::string label = m_fields->m_label->getString();
+                        bool isSent = body.size() > 0 && body.contains("sends") && body["sends"].size() > 0;
+                        if (body.size() > 0)
+                            ModManager::addLevelToSentCache(levelID, isSent);
 
-                    size_t pos = label.find(placeholder);
-                    if (pos != std::string::npos)
-                        // Replace "Sent: Loading..." with the actual value
-                        label.replace(
-                            pos,
-                            placeholder.length(),
-                            // Basically if the body isn't empty,it checks if the
-                            // "sends" object in the body isn't empty either and
-                            // shows either "true" or "false" as strings directly
-                            // If the body is empty it will show "failed"
-                            fmt::format(
-                                "Sent: {}",
-                                body.size() > 0 ?
-                                    body.contains("sends") && body["sends"].size() > 0
-                                    ? "true"
-                                    : "false"
-                                : "failed"
-                            )
-                        );
-
-                    m_fields->m_label->setString(label.c_str(), true);
-                    this->updateLayout();
-                }
-            );
+                        std::string label = m_fields->m_label->getString();
+                        size_t pos = label.find(placeholder);
+                        if (pos != std::string::npos)
+                            label.replace(
+                                pos,
+                                placeholder.length(),
+                                fmt::format(
+                                    "Sent: {}",
+                                    body.size() > 0 ? isSent ? "true" : "false" : "failed"
+                                )
+                            );
+                        m_fields->m_label->setString(label.c_str(), true);
+                        this->updateLayout();
+                    }
+                );
+            }
         }
         
 		if (m_fields->m_originalLevelToggle)
