@@ -1,3 +1,7 @@
+# Version 1.3.11
+- Added the Sent setting
+- Fixed setting not appearing if all of them were disabled but one was still enabled (only happened with some of them)
+
 # Version 1.3.10
 - Added iOS compatibility (still experimental)
 - Fixed the mod downloading AutoLeaderboard & Mod Badge Info even though they aren't required

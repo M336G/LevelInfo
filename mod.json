@@ -1,6 +1,6 @@
 {
-  "geode": "5.0.0-beta.1",
-  "version": "v1.3.10",
+  "geode": "5.0.0",
+  "version": "v1.3.11",
 	"gd": {
 		"win": "2.2081",
 		"android": "2.2081",
@@ -23,20 +23,6 @@
     "interface",
     "customization"
   ],
-  "dependencies": {
-    "m336.modbadgeinfo": {
-      "version": ">=1.1.0",
-      "importance": "suggested"
-    },
-    "m336.show-touches": {
-      "version": ">=1.0.0",
-      "importance": "suggested"
-    },
-    "m336.retry-on-play-layer": {
-      "version": ">=1.1.0",
-      "importance": "suggested"
-    }
-  },
   "settings": {
     "text-settings-title": {
       "type": "title",
@@ -136,6 +122,12 @@
     "show-ldm-existence": {
       "name": "Low Detail Mode Existence",
       "description": "Indicates whether a Low Detail Mode exists or not on a level",
+      "type": "bool",
+      "default": true
+    },
+    "show-sent": {
+      "name": "Sent",
+      "description": "Indicates whether the level has been sent by Moderators or not",
       "type": "bool",
       "default": true
     },

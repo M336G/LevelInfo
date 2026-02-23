@@ -20,6 +20,7 @@ class $modify(LevelInfoLayer) {
 	    bool m_gameVersionToggle = geode::Mod::get()->getSettingValue<bool>("show-game-version");
 	    bool m_levelVersionToggle = geode::Mod::get()->getSettingValue<bool>("show-level-version");
 	    bool m_ldmExistence = geode::Mod::get()->getSettingValue<bool>("show-ldm-existence");
+        bool m_sent = geode::Mod::get()->getSettingValue<bool>("show-sent");
 	    bool m_originalLevelToggle = geode::Mod::get()->getSettingValue<bool>("show-original-level-id");
 	    bool m_twoPlayerModeToggle = geode::Mod::get()->getSettingValue<bool>("show-two-player-mode");
 	    bool m_editorTimeToggle = geode::Mod::get()->getSettingValue<bool>("show-editor-time");
@@ -28,6 +29,8 @@ class $modify(LevelInfoLayer) {
 	    bool m_totalJumpsToggle = geode::Mod::get()->getSettingValue<bool>("show-total-jumps");
 	    bool m_clicksToggle = geode::Mod::get()->getSettingValue<bool>("show-clicks");
 	    bool m_attemptTimeToggle = geode::Mod::get()->getSettingValue<bool>("show-attempt-time");
+    
+        geode::async::TaskHolder<geode::utils::web::WebResponse> m_listener;
     };
     
     bool showInfoLabel() {
@@ -37,6 +40,9 @@ class $modify(LevelInfoLayer) {
 		!m_fields->m_objectCountToggle && 
 		!m_fields->m_gameVersionToggle && 
 		!m_fields->m_levelVersionToggle && 
+        !m_fields->m_ldmExistence && 
+        !m_fields->m_sent && 
+        !m_fields->m_originalLevelToggle && 
 		!m_fields->m_twoPlayerModeToggle && 
 		!m_fields->m_editorTimeToggle && 
 		!m_fields->m_editorTimeCopiesToggle && 
@@ -154,6 +160,47 @@ class $modify(LevelInfoLayer) {
         
 		if (m_fields->m_ldmExistence)
             labelString << fmt::format("LDM Existence: {}\n", level->m_lowDetailMode);
+        
+        if (m_fields->m_sent) {
+            const std::string placeholder = "Sent: Loading...";
+            labelString << placeholder << "\n";
+
+            auto req = geode::utils::web::WebRequest();
+
+            // This will call SendDB's API to know if the level was sent or not. The
+            // actual sent field will be updated after the request is completed
+            m_fields->m_listener.spawn(
+                req.get(fmt::format("https://api.senddb.dev/api/v1/level/{}", level->m_levelID)),
+                [this, placeholder](geode::utils::web::WebResponse res) {
+                    matjson::Value body = res.json().unwrapOrDefault();
+
+                    std::string label = m_fields->m_label->getString();
+
+                    size_t pos = label.find(placeholder);
+                    if (pos != std::string::npos)
+                        // Replace "Sent: Loading..." with the actual value
+                        label.replace(
+                            pos,
+                            placeholder.length(),
+                            // Basically if the body isn't empty,it checks if the
+                            // "sends" object in the body isn't empty either and
+                            // shows either "true" or "false" as strings directly
+                            // If the body is empty it will show "failed"
+                            fmt::format(
+                                "Sent: {}",
+                                body.size() > 0 ?
+                                    body.contains("sends") && body["sends"].size() > 0
+                                    ? "true"
+                                    : "false"
+                                : "failed"
+                            )
+                        );
+
+                    m_fields->m_label->setString(label.c_str(), true);
+                    this->updateLayout();
+                }
+            );
+        }
         
 		if (m_fields->m_originalLevelToggle)
             labelString << fmt::format("Original ID: {}\n", (static_cast<int>(level->m_originalLevel) == static_cast<int>(level->m_levelID) || static_cast<int>(level->m_originalLevel) == 0) ? "N/A" : std::to_string(static_cast<int>(level->m_originalLevel)));
