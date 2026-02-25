@@ -1,175 +1,153 @@
 #include <Geode/modify/LevelInfoLayer.hpp>
-#include "ModManager.hpp"
+#include <cue/LoadingCircle.hpp> // This may be overkill
 
-// TODO: Replace "Loading..." text by a Loading Circle
+#include "ModManager.h"
+#include "ModStruct.h"
 
-class $modify(LevelInfoLayer) {
+class $modify(MyLevelInfoLayer, LevelInfoLayer) {
     struct Fields {
-        int64_t m_textWidthOffset = geode::Mod::get()->getSettingValue<int64_t>("text-width-offset");
-        int64_t m_textHeightOffset = geode::Mod::get()->getSettingValue<int64_t>("text-height-offset");
-        double m_textSize = geode::Mod::get()->getSettingValue<double>("text-size");
-        int64_t m_textOpacity = geode::Mod::get()->getSettingValue<int64_t>("text-opacity");
-        cocos2d::ccColor3B m_textColor = geode::Mod::get()->getSettingValue<cocos2d::ccColor3B>("text-color");
-        cocos2d::CCSize m_winSize = cocos2d::CCDirector::get()->getWinSize();
+        const cocos2d::CCSize m_winSize = cocos2d::CCDirector::get()->getWinSize();
 
-        cocos2d::CCLabelBMFont* m_label = cocos2d::CCLabelBMFont::create("Loading...", "bigFont.fnt");
-            
-        // Get all the settings values
-	    bool m_requestedStarsToggle = geode::Mod::get()->getSettingValue<bool>("show-requested-stars");
-	    bool m_featuredRankToggle = geode::Mod::get()->getSettingValue<bool>("show-featured-rank");
-	    bool m_objectCountToggle = geode::Mod::get()->getSettingValue<bool>("show-object-count");
-	    bool m_gameVersionToggle = geode::Mod::get()->getSettingValue<bool>("show-game-version");
-	    bool m_levelVersionToggle = geode::Mod::get()->getSettingValue<bool>("show-level-version");
-	    bool m_ldmExistence = geode::Mod::get()->getSettingValue<bool>("show-ldm-existence");
-        bool m_sent = geode::Mod::get()->getSettingValue<bool>("show-sent");
-	    bool m_originalLevelToggle = geode::Mod::get()->getSettingValue<bool>("show-original-level-id");
-	    bool m_twoPlayerModeToggle = geode::Mod::get()->getSettingValue<bool>("show-two-player-mode");
-	    bool m_editorTimeToggle = geode::Mod::get()->getSettingValue<bool>("show-editor-time");
-	    bool m_editorTimeCopiesToggle = geode::Mod::get()->getSettingValue<bool>("show-editor-time-copies");
-	    bool m_totalAttemptsToggle = geode::Mod::get()->getSettingValue<bool>("show-total-attempts");
-	    bool m_totalJumpsToggle = geode::Mod::get()->getSettingValue<bool>("show-total-jumps");
-	    bool m_clicksToggle = geode::Mod::get()->getSettingValue<bool>("show-clicks");
-	    bool m_attemptTimeToggle = geode::Mod::get()->getSettingValue<bool>("show-attempt-time");
-    
+        const ModStruct::InfoSettings m_infoSettings = {
+            static_cast<float>(m_winSize.width * 0.2 + geode::Mod::get()->getSettingValue<int64_t>("text-width-offset")),
+            static_cast<float>(m_winSize.height * 0.7 + geode::Mod::get()->getSettingValue<int64_t>("text-height-offset")),
+            static_cast<float>(geode::Mod::get()->getSettingValue<double>("text-size")),
+            static_cast<int>(round(static_cast<double>(geode::Mod::get()->getSettingValue<int64_t>("text-opacity")) / 100 * 255)),
+            geode::Mod::get()->getSettingValue<cocos2d::ccColor3B>("text-color")
+        };
+
+        const ModStruct::InfoToggles m_infoToggles = {
+            geode::Mod::get()->getSettingValue<bool>("show-requested-stars"),
+            geode::Mod::get()->getSettingValue<bool>("show-featured-rank"),
+            geode::Mod::get()->getSettingValue<bool>("show-object-count"),
+            geode::Mod::get()->getSettingValue<bool>("show-game-version"),
+            geode::Mod::get()->getSettingValue<bool>("show-level-version"),
+            geode::Mod::get()->getSettingValue<bool>("show-ldm-existence"),
+            geode::Mod::get()->getSettingValue<bool>("show-sent"),
+            geode::Mod::get()->getSettingValue<bool>("show-original-level-id"),
+            geode::Mod::get()->getSettingValue<bool>("show-two-player-mode"),
+            geode::Mod::get()->getSettingValue<bool>("show-editor-time"),
+            geode::Mod::get()->getSettingValue<bool>("show-editor-time-copies"),
+            geode::Mod::get()->getSettingValue<bool>("show-total-attempts"),
+            geode::Mod::get()->getSettingValue<bool>("show-total-jumps"),
+            geode::Mod::get()->getSettingValue<bool>("show-clicks"),
+            geode::Mod::get()->getSettingValue<bool>("show-attempt-time")
+        };
+
+        cue::LoadingCircle *m_loadingCircle = cue::LoadingCircle::create();
+        cocos2d::CCLabelBMFont *m_label;
+
         geode::async::TaskHolder<geode::utils::web::WebResponse> m_listener;
-    };
-    
-    bool showInfoLabel() {
-        // If all of those values are false, don't display the label text
-        if (!m_fields->m_requestedStarsToggle && 
-		!m_fields->m_featuredRankToggle && 
-		!m_fields->m_objectCountToggle && 
-		!m_fields->m_gameVersionToggle && 
-		!m_fields->m_levelVersionToggle && 
-        !m_fields->m_ldmExistence && 
-        !m_fields->m_sent && 
-        !m_fields->m_originalLevelToggle && 
-		!m_fields->m_twoPlayerModeToggle && 
-		!m_fields->m_editorTimeToggle && 
-		!m_fields->m_editorTimeCopiesToggle && 
-		!m_fields->m_totalAttemptsToggle && 
-		!m_fields->m_totalJumpsToggle && 
-		!m_fields->m_clicksToggle && 
-		!m_fields->m_attemptTimeToggle) return false;
-
-        // If any of those is 0, don't display the label text
-        else if (m_fields->m_textSize <= 0 || m_fields->m_textOpacity <= 0) return false;
-
-        return true;
     };
 
     bool init(GJGameLevel* level, bool challenge) {
         if (!LevelInfoLayer::init(level, challenge))
             return false;
 
-        if (!showInfoLabel())
-            return true;
+        if (m_fields->m_infoSettings.size > 0 && m_fields->m_infoToggles.anyEnabled()) {
+            m_fields->m_loadingCircle->addToLayer(this);
 
-        m_fields->m_label->setID("level-info-label"_spr);
-        m_fields->m_label->setPositionX(m_fields->m_winSize.width * 0.2 + m_fields->m_textWidthOffset);
-        m_fields->m_label->setPositionY(m_fields->m_winSize.height * 0.7 + m_fields->m_textHeightOffset);
-        m_fields->m_label->setScale(m_fields->m_textSize);
-        m_fields->m_label->setOpacity(static_cast<int64_t>(round(static_cast<double>(m_fields->m_textOpacity) / 100 * 255)));
-        m_fields->m_label->setColor(m_fields->m_textColor);
-        this->addChild(m_fields->m_label);
-        
-        // If the level is already downloaded, display the stats
-        if (level->m_levelString != "")
-            displayLabel(level);
+            m_fields->m_loadingCircle->setScale(0.5f);
+            m_fields->m_loadingCircle->setPosition({
+                m_fields->m_infoSettings.width,
+                m_fields->m_infoSettings.height
+            });
+
+            m_fields->m_loadingCircle->fadeIn();
+            
+            // This will be called if the level is already downloaded
+            if (!level->m_levelString.empty())
+                showLevelInfo(level);
+        }
 
         return true;
     };
 
+    // This will be called if the level just finished downloading
     void levelDownloadFinished(GJGameLevel *level) {
 		LevelInfoLayer::levelDownloadFinished(level);
 
-		if (showInfoLabel())
-            displayLabel(level);
+        if (m_fields->m_infoSettings.size > 0 && m_fields->m_infoToggles.anyEnabled())
+            showLevelInfo(level);
     };
 
-	void displayLabel(GJGameLevel* level) {
-        std::stringstream labelString;
+	void showLevelInfo(GJGameLevel* level) {
+        geode::log::info("Shows!");
 
-        // Here I define every stats, if they are enabled
-        if (m_fields->m_requestedStarsToggle)
-            labelString << fmt::format("Req. Difficulty: {}\n", level->m_starsRequested);
+        std::stringstream labelContent;
+
+        // Here I define every stats depending on them being enabled or not
+        if (m_fields->m_infoToggles.requestedStars)
+            labelContent << fmt::format(
+                "Requested {}: {}",
+                level->isPlatformer() ? "Moons" : "Stars",
+                level->m_starsRequested
+            ) << std::endl;
         
-		if (m_fields->m_featuredRankToggle)
-            labelString << fmt::format("Featured Rank: {}\n", level->m_featured != 0 ? std::to_string(level->m_featured) : "N/A");
+		if (m_fields->m_infoToggles.featuredRank)
+            labelContent << fmt::format(
+                "Featured Rank: {}",
+                level->m_featured > 0
+                    ? std::to_string(level->m_featured)
+                    : "N/A"
+                ) << std::endl;
 
-        if (m_fields->m_objectCountToggle) {
-            std::string levelString;
-            switch(level->m_objectCount) {
+        if (m_fields->m_infoToggles.objectCount) {
+            switch (level->m_objectCount) {
                 case 0:
-                case 65535:
-                    levelString = cocos2d::ZipUtils::decompressString(
-                        level->m_levelString,
-                        false,
-                        0
+                case 65535: {
+                    std::string decompressed = cocos2d::ZipUtils::decompressString(
+                        level->m_levelString, false, 0
                     );
-                    #ifdef __APPLE__
-                    labelString << fmt::format("Object Count: ~{}\n", std::count(
-                        levelString.begin(),
-                        levelString.end(),
-                        ';'
-                    ));
-                    #else
-                    labelString << fmt::format("Object Count: ~{}\n", std::ranges::count(
-                        levelString.begin(),
-                        levelString.end(),
-                        ';'
-                    ));
-                    #endif
+                    labelContent << fmt::format(
+                        "Object Count: ~{}",
+                        std::count(decompressed.begin(), decompressed.end(), ';')
+                    ) << std::endl;
                     break;
+                }
                 default:
-                    labelString << fmt::format("Object Count: {}\n", std::to_string(level->m_objectCount));
+                    labelContent << fmt::format(
+                        "Object Count: {}",
+                        level->m_objectCount
+                    ) << std::endl;
                     break;
             }
         }
 
-        if (m_fields->m_gameVersionToggle) {
-            switch(level->m_gameVersion) {
-                case 22:
-                    labelString << "Game Version: 2.2\n";
-                    break;
-                case 21:
-                    labelString << "Game Version: 2.1\n";
-                    break;
-                case 20:
-                    labelString << "Game Version: 2.0\n";
-                    break;
-                case 19:
-                    labelString << "Game Version: 1.9\n";
-                    break;
-                case 18:
-                    labelString << "Game Version: 1.8\n";
-                    break;
-                case 10:
-                    labelString << "Game Version: 1.7\n";
-                    break;
-                default:
-                    labelString << "Game Version: Pre-1.7\n";
-                    break;
-            }
-        }
+        if (m_fields->m_infoToggles.gameVersion)
+            labelContent << fmt::format(
+                "Game Version: {}",
+                ModManager::GameVersions.count(level->m_gameVersion)
+                    ? ModManager::GameVersions.at(level->m_gameVersion)
+                    : "Pre-1.7"
+                ) << std::endl;
 
-        if (m_fields->m_twoPlayerModeToggle)
-            labelString << fmt::format("2-Player Mode: {}\n", level->m_twoPlayerMode);
+        if (m_fields->m_infoToggles.twoPlayerMode)
+            labelContent << fmt::format(
+                "2-Player Mode: {}",
+                level->m_twoPlayerMode
+            ) << std::endl;
         
-		if (m_fields->m_levelVersionToggle)
-            labelString << fmt::format("Level Version: {}\n", level->m_levelVersion);
+		if (m_fields->m_infoToggles.levelVersion)
+            labelContent << fmt::format(
+                "Level Version: {}",
+                level->m_levelVersion
+            ) << std::endl;
         
-		if (m_fields->m_ldmExistence)
-            labelString << fmt::format("LDM Existence: {}\n", level->m_lowDetailMode);
+		if (m_fields->m_infoToggles.ldmExistence)
+            labelContent << fmt::format(
+                "LDM Existence: {}",
+                level->m_lowDetailMode
+            ) << std::endl;
         
-        if (m_fields->m_sent) {
+        if (m_fields->m_infoToggles.sent) {
             auto cached = ModManager::getLevelFromSentCache(level->m_levelID);
 
             if (cached.has_value()) {
-                labelString << fmt::format("Sent: {}\n", cached.value());
+                labelContent << fmt::format("Sent: {}", cached.value()) << std::endl;
             } else {
-                const std::string placeholder = "Sent: Loading...";
-                labelString << placeholder << "\n";
+                const std::string placeholder = "Sent: loading...";
+                labelContent << placeholder << std::endl;
                 
                 auto req = geode::utils::web::WebRequest();
                 auto levelID = static_cast<int>(level->m_levelID);
@@ -178,62 +156,123 @@ class $modify(LevelInfoLayer) {
                 // actual sent field will be updated after the request is completed
                 m_fields->m_listener.spawn(
                     req.get(fmt::format("https://api.senddb.dev/api/v1/level/{}", levelID)),
-                    [this, placeholder, levelID](geode::utils::web::WebResponse res) {
+                    [self = geode::WeakRef<MyLevelInfoLayer>(this), placeholder, levelID](geode::utils::web::WebResponse res) {
+                        auto locked = self.lock();
+                        if (!locked || !locked->m_fields->m_label) return;
+                        
                         matjson::Value body = res.json().unwrapOrDefault();
 
-                        bool isSent = body.size() > 0 && body.contains("sends") && body["sends"].size() > 0;
+                        bool isSent = body.size() > 0 &&
+                            body.contains("sends") && body["sends"].size() > 0;
                         if (body.size() > 0)
                             ModManager::addLevelToSentCache(levelID, isSent);
 
-                        std::string label = m_fields->m_label->getString();
-                        size_t pos = label.find(placeholder);
+                        std::string labelContent = locked->m_fields->m_label->getString();
+                        size_t pos = labelContent.find(placeholder);
                         if (pos != std::string::npos)
-                            label.replace(
+                            labelContent.replace(
                                 pos,
                                 placeholder.length(),
                                 fmt::format(
                                     "Sent: {}",
-                                    body.size() > 0 ? isSent ? "true" : "false" : "failed"
+                                    body.size() > 0
+                                        ? isSent
+                                            ? "true"
+                                            : "false"
+                                        : "failed"
                                 )
                             );
-                        m_fields->m_label->setString(label.c_str(), true);
-                        this->updateLayout();
+
+                        locked->m_fields->m_label->setString(labelContent.c_str(), true);
+                        locked->updateLayout();
                     }
                 );
             }
         }
         
-		if (m_fields->m_originalLevelToggle)
-            labelString << fmt::format("Original ID: {}\n", (static_cast<int>(level->m_originalLevel) == static_cast<int>(level->m_levelID) || static_cast<int>(level->m_originalLevel) == 0) ? "N/A" : std::to_string(static_cast<int>(level->m_originalLevel)));
+		if (m_fields->m_infoToggles.originalLevel) {
+            const int levelID = static_cast<int>(level->m_levelID);
+            const int originalLevelID = static_cast<int>(level->m_originalLevel);
 
-        if (m_fields->m_editorTimeToggle) {
-            std::chrono::seconds seconds(level->m_workingTime);
-            labelString << fmt::format("Editor: {}h{}m{}s \n", duration_cast<std::chrono::hours>(seconds).count(), duration_cast<std::chrono::minutes>(seconds).count() % 60, seconds.count() % 60);
+            labelContent << fmt::format(
+                "Original ID: {}",
+                originalLevelID == 0 || levelID == originalLevelID
+                    ? "N/A" : std::to_string(originalLevelID)
+            ) << std::endl;
         }
 
-        if (m_fields->m_editorTimeCopiesToggle) {
-            std::chrono::seconds seconds(level->m_workingTime + level->m_workingTime2);
-            labelString << fmt::format("Edit. (+cop.): {}h{}m{}s \n", duration_cast<std::chrono::hours>(seconds).count(), duration_cast<std::chrono::minutes>(seconds).count() % 60, seconds.count() % 60);
+        if (m_fields->m_infoToggles.editorTime) {
+            const std::chrono::seconds seconds(level->m_workingTime);
+
+            labelContent << fmt::format(
+                "Editor: {}h{}m{}s ",
+                duration_cast<std::chrono::hours>(seconds).count(),
+                duration_cast<std::chrono::minutes>(seconds).count() % 60,
+                seconds.count() % 60
+            ) << std::endl;
         }
 
-        if (m_fields->m_totalAttemptsToggle)
-            labelString << fmt::format("Total Attempts: {}\n", static_cast<int>(level->m_attempts));
-        
-		if (m_fields->m_totalJumpsToggle)
-            labelString << fmt::format("Total Jumps: {}\n", static_cast<int>(level->m_jumps));
-        
-		if (m_fields->m_clicksToggle)
-            labelString << fmt::format("Clicks (best att.): {}\n", static_cast<int>(level->m_clicks));
-        
-		if (m_fields->m_attemptTimeToggle) {
-            std::chrono::seconds seconds(static_cast<int>(level->m_attemptTime));
-            labelString << fmt::format("Time (best att.): {}m{}s\n", duration_cast<std::chrono::minutes>(seconds).count() % 60, seconds.count() % 60);
+        if (m_fields->m_infoToggles.editorTimeCopies) {
+            const std::chrono::seconds seconds(level->m_workingTime + level->m_workingTime2);
+            
+            labelContent << fmt::format(
+                "Edit. (+cop.): {}h{}m{}s ",
+                duration_cast<std::chrono::hours>(seconds).count(),
+                duration_cast<std::chrono::minutes>(seconds).count() % 60,
+                seconds.count() % 60
+            ) << std::endl;
         }
 
-        // Update Label
-        m_fields->m_label->setString(labelString.str().c_str(), true);
+        if (m_fields->m_infoToggles.totalAttempts)
+            labelContent << fmt::format(
+                "Total Attempts: {}",
+                static_cast<int>(level->m_attempts)
+            ) << std::endl;
+        
+		if (m_fields->m_infoToggles.totalJumps)
+            labelContent << fmt::format(
+                "Total Jumps: {}",
+                static_cast<int>(level->m_jumps)
+            ) << std::endl;
+        
+		if (m_fields->m_infoToggles.clicks)
+            labelContent << fmt::format(
+                "Clicks (best att.): {}",
+                static_cast<int>(level->m_clicks)
+            ) << std::endl;
+        
+		if (m_fields->m_infoToggles.attemptTime) {
+            const std::chrono::seconds seconds(static_cast<int>(level->m_attemptTime));
+
+            labelContent << fmt::format(
+                "Time (best att.): {}m{}s",
+                duration_cast<std::chrono::minutes>(seconds).count() % 60,
+                seconds.count() % 60
+            ) << std::endl;
+        }
+
+        // Once we got all the values for the label, create it and set its settings
+        m_fields->m_label = cocos2d::CCLabelBMFont::create(
+            labelContent.str().c_str(),
+            "bigFont.fnt"
+        );
+        m_fields->m_label->setID("level-info-label"_spr);
+
+        m_fields->m_label->setScale(m_fields->m_infoSettings.size);
+        m_fields->m_label->setOpacity(m_fields->m_infoSettings.opacity);
+        m_fields->m_label->setColor(m_fields->m_infoSettings.color);
+
+        m_fields->m_label->setPosition({
+            m_fields->m_infoSettings.width,
+            m_fields->m_infoSettings.height
+        });
+
+        // And display it
+        this->addChild(m_fields->m_label);
 		this->updateLayout();
 
-        geode::log::info("Successfully displayed informations about the level '{}' by {}", level->m_levelName, level->m_creatorName);
-    }
+        // After the label's displayed, finally remove the loading circle
+        if (m_fields->m_loadingCircle)
+            m_fields->m_loadingCircle->fadeOut();
+    };
 };

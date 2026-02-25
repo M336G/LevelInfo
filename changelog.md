@@ -1,3 +1,8 @@
+# Version 1.4.0
+- Added a loading circle while the level information loads (thanks [cue](https://github.com/dankmeme01/cue)!)
+- Changed "Req. Difficulty" to "Requested stars/moons"
+- Improved the codebase & tried making it safer/more optimized
+
 # Version 1.3.12
 - Added caching for the Sent setting
     - If the level was already loaded during the session with the setting enabled, it won't make another request and will instead get it from the memory (up to 1,000 levels can be cached)

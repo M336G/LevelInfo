@@ -1,6 +1,4 @@
-#include "ModManager.hpp"
-
-std::unordered_map<int, bool> ModManager::SentCache;
+#include "ModManager.h"
 
 void ModManager::addLevelToSentCache(int levelID, bool sent) {
     if (SentCache.size() >= 1000)
