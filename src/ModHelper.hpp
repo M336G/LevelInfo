@@ -24,6 +24,8 @@ public:
             offset = 0x96C0DB;
         #elif defined(GEODE_IS_IOS)
             offset = 0x6b8cc2;
+        #else
+            static_assert(false, "Unsupported platform");
         #endif
 
         std::string ret = (char*)(geode::base::get() + offset);
