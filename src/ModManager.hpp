@@ -1,8 +1,9 @@
 #pragma once
+#include "ModHelper.hpp"
 
 class ModManager {
 private:
-    struct InfoSettings {
+    struct LevelInfoDisplaySettings {
         int widthOffset;
         int heightOffset;
         float size;
@@ -17,7 +18,7 @@ private:
         };
     };
 
-    struct InfoToggles {
+    struct LevelInfoToggleSettings {
         bool requestedStars;
         bool featuredRank;
         bool objectCount;
@@ -42,10 +43,19 @@ private:
         }
     };
 
-    inline static geode::Mod *Mod = geode::Mod::get();
+    struct LevelInfoOtherSettings {
+        bool showGDPSWarning;
+    };
+
+    inline static const geode::Mod *Mod = geode::Mod::get();
+
+    inline static std::unordered_map<int, bool> SentCache;
 
 public:
-    inline static InfoSettings Settings = {
+    inline static bool IsGDPS = ModHelper::getBaseURL() != "https://www.boomlings.com/database";
+    inline static bool ShowedGDPSWarning = false;
+
+    inline static LevelInfoDisplaySettings DisplaySettings = {
         static_cast<int>(Mod->getSettingValue<int64_t>("text-width-offset")),
         static_cast<int>(Mod->getSettingValue<int64_t>("text-height-offset")),
         static_cast<float>(Mod->getSettingValue<double>("text-size")),
@@ -53,7 +63,7 @@ public:
         Mod->getSettingValue<cocos2d::ccColor3B>("text-color")
     };
 
-    inline static InfoToggles Toggles = {
+    inline static LevelInfoToggleSettings ToggleSettings = {
         Mod->getSettingValue<bool>("show-requested-stars"),
         Mod->getSettingValue<bool>("show-featured-rank"),
         Mod->getSettingValue<bool>("show-object-count"),
@@ -71,6 +81,10 @@ public:
         Mod->getSettingValue<bool>("show-attempt-time")
     };
 
+    inline static LevelInfoOtherSettings OtherSettings = {
+        !Mod->getSettingValue<bool>("disable-gdps-warning"),
+    };
+
     static void addLevelToSentCache(int levelID, bool sent);
     static std::optional<bool> getLevelFromSentCache(int levelID);
 
@@ -82,6 +96,4 @@ public:
         {18, "1.8"},
         {10, "1.7"}
     };
-private:
-    inline static std::unordered_map<int, bool> SentCache;
 };

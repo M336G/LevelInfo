@@ -1,3 +1,7 @@
+# Version 1.4.2
+- Disable the Sent indicator when on a GDPS (also shows a warning once per session if that's the case, which you can disable in the mod's settings)
+- Renamed "Text Settings" to "Display Settings"
+
 # Version 1.4.1
 - Optimized settings
     - Settings are now loaded once when the mod loads and automatically update when changed instead of being reloaded every time the player opens LevelInfoLayer

@@ -24,9 +24,9 @@
     "customization"
   ],
   "settings": {
-    "text-settings-title": {
+    "display-settings": {
       "type": "title",
-      "name": "Text Settings"
+      "name": "Display Settings"
     },
     "text-width-offset": {
       "name": "Text X offset",
@@ -172,6 +172,17 @@
       "description": "Show your best time on a level",
       "type": "bool",
       "default": true
+    },
+
+    "other-settings": {
+      "type": "title",
+      "name": "Other Settings"
+    },
+    "disable-gdps-warning": {
+      "name": "Disable GDPS warning",
+      "description": "Disable the warning you get when you're on a GDPS and have the sent indicator toggled on",
+      "type": "bool",
+      "default": false
     }
   }
 }
