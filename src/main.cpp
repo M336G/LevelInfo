@@ -1,41 +1,16 @@
 #include <Geode/modify/LevelInfoLayer.hpp>
 #include <cue/LoadingCircle.hpp> // This may be overkill
-
-#include "ModManager.h"
-#include "ModStruct.h"
+#include "ModManager.hpp"
 
 class $modify(MyLevelInfoLayer, LevelInfoLayer) {
     struct Fields {
-        const cocos2d::CCSize m_winSize = cocos2d::CCDirector::get()->getWinSize();
-
-        const ModStruct::InfoSettings m_infoSettings = {
-            static_cast<float>(m_winSize.width * 0.2 + geode::Mod::get()->getSettingValue<int64_t>("text-width-offset")),
-            static_cast<float>(m_winSize.height * 0.7 + geode::Mod::get()->getSettingValue<int64_t>("text-height-offset")),
-            static_cast<float>(geode::Mod::get()->getSettingValue<double>("text-size")),
-            static_cast<int>(round(static_cast<double>(geode::Mod::get()->getSettingValue<int64_t>("text-opacity")) / 100 * 255)),
-            geode::Mod::get()->getSettingValue<cocos2d::ccColor3B>("text-color")
-        };
-
-        const ModStruct::InfoToggles m_infoToggles = {
-            geode::Mod::get()->getSettingValue<bool>("show-requested-stars"),
-            geode::Mod::get()->getSettingValue<bool>("show-featured-rank"),
-            geode::Mod::get()->getSettingValue<bool>("show-object-count"),
-            geode::Mod::get()->getSettingValue<bool>("show-game-version"),
-            geode::Mod::get()->getSettingValue<bool>("show-level-version"),
-            geode::Mod::get()->getSettingValue<bool>("show-ldm-existence"),
-            geode::Mod::get()->getSettingValue<bool>("show-sent"),
-            geode::Mod::get()->getSettingValue<bool>("show-original-level-id"),
-            geode::Mod::get()->getSettingValue<bool>("show-two-player-mode"),
-            geode::Mod::get()->getSettingValue<bool>("show-editor-time"),
-            geode::Mod::get()->getSettingValue<bool>("show-editor-time-copies"),
-            geode::Mod::get()->getSettingValue<bool>("show-total-attempts"),
-            geode::Mod::get()->getSettingValue<bool>("show-total-jumps"),
-            geode::Mod::get()->getSettingValue<bool>("show-clicks"),
-            geode::Mod::get()->getSettingValue<bool>("show-attempt-time")
-        };
-
         cue::LoadingCircle *m_loadingCircle = cue::LoadingCircle::create();
         cocos2d::CCLabelBMFont *m_label;
+
+        cocos2d::CCPoint m_position = {
+            ModManager::Settings.getWidth(),
+            ModManager::Settings.getHeight()
+        };
 
         geode::async::TaskHolder<geode::utils::web::WebResponse> m_listener;
     };
@@ -44,14 +19,11 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
         if (!LevelInfoLayer::init(level, challenge))
             return false;
 
-        if (m_fields->m_infoSettings.size > 0 && m_fields->m_infoToggles.anyEnabled()) {
+        if (ModManager::Settings.size > 0 && ModManager::Toggles.anyEnabled()) {
             m_fields->m_loadingCircle->addToLayer(this);
 
             m_fields->m_loadingCircle->setScale(0.5f);
-            m_fields->m_loadingCircle->setPosition({
-                m_fields->m_infoSettings.width,
-                m_fields->m_infoSettings.height
-            });
+            m_fields->m_loadingCircle->setPosition(m_fields->m_position);
 
             m_fields->m_loadingCircle->fadeIn();
             
@@ -67,24 +39,22 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
     void levelDownloadFinished(GJGameLevel *level) {
 		LevelInfoLayer::levelDownloadFinished(level);
 
-        if (m_fields->m_infoSettings.size > 0 && m_fields->m_infoToggles.anyEnabled())
+        if (ModManager::Settings.size > 0 && ModManager::Toggles.anyEnabled())
             showLevelInfo(level);
     };
 
 	void showLevelInfo(GJGameLevel* level) {
-        geode::log::info("Shows!");
-
         std::stringstream labelContent;
 
         // Here I define every stats depending on them being enabled or not
-        if (m_fields->m_infoToggles.requestedStars)
+        if (ModManager::Toggles.requestedStars)
             labelContent << fmt::format(
                 "Requested {}: {}",
                 level->isPlatformer() ? "Moons" : "Stars",
                 level->m_starsRequested
             ) << std::endl;
         
-		if (m_fields->m_infoToggles.featuredRank)
+		if (ModManager::Toggles.featuredRank)
             labelContent << fmt::format(
                 "Featured Rank: {}",
                 level->m_featured > 0
@@ -92,7 +62,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                     : "N/A"
                 ) << std::endl;
 
-        if (m_fields->m_infoToggles.objectCount) {
+        if (ModManager::Toggles.objectCount) {
             switch (level->m_objectCount) {
                 case 0:
                 case 65535: {
@@ -114,7 +84,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
             }
         }
 
-        if (m_fields->m_infoToggles.gameVersion)
+        if (ModManager::Toggles.gameVersion)
             labelContent << fmt::format(
                 "Game Version: {}",
                 ModManager::GameVersions.count(level->m_gameVersion)
@@ -122,25 +92,25 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                     : "Pre-1.7"
                 ) << std::endl;
 
-        if (m_fields->m_infoToggles.twoPlayerMode)
+        if (ModManager::Toggles.twoPlayerMode)
             labelContent << fmt::format(
                 "2-Player Mode: {}",
                 level->m_twoPlayerMode
             ) << std::endl;
         
-		if (m_fields->m_infoToggles.levelVersion)
+		if (ModManager::Toggles.levelVersion)
             labelContent << fmt::format(
                 "Level Version: {}",
                 level->m_levelVersion
             ) << std::endl;
         
-		if (m_fields->m_infoToggles.ldmExistence)
+		if (ModManager::Toggles.ldmExistence)
             labelContent << fmt::format(
                 "LDM Existence: {}",
                 level->m_lowDetailMode
             ) << std::endl;
         
-        if (m_fields->m_infoToggles.sent) {
+        if (ModManager::Toggles.sent) {
             auto cached = ModManager::getLevelFromSentCache(level->m_levelID);
 
             if (cached.has_value()) {
@@ -190,7 +160,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
             }
         }
         
-		if (m_fields->m_infoToggles.originalLevel) {
+		if (ModManager::Toggles.originalLevel) {
             const int levelID = static_cast<int>(level->m_levelID);
             const int originalLevelID = static_cast<int>(level->m_originalLevel);
 
@@ -201,7 +171,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
             ) << std::endl;
         }
 
-        if (m_fields->m_infoToggles.editorTime) {
+        if (ModManager::Toggles.editorTime) {
             const std::chrono::seconds seconds(level->m_workingTime);
 
             labelContent << fmt::format(
@@ -212,7 +182,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
             ) << std::endl;
         }
 
-        if (m_fields->m_infoToggles.editorTimeCopies) {
+        if (ModManager::Toggles.editorTimeCopies) {
             const std::chrono::seconds seconds(level->m_workingTime + level->m_workingTime2);
             
             labelContent << fmt::format(
@@ -223,25 +193,25 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
             ) << std::endl;
         }
 
-        if (m_fields->m_infoToggles.totalAttempts)
+        if (ModManager::Toggles.totalAttempts)
             labelContent << fmt::format(
                 "Total Attempts: {}",
                 static_cast<int>(level->m_attempts)
             ) << std::endl;
         
-		if (m_fields->m_infoToggles.totalJumps)
+		if (ModManager::Toggles.totalJumps)
             labelContent << fmt::format(
                 "Total Jumps: {}",
                 static_cast<int>(level->m_jumps)
             ) << std::endl;
         
-		if (m_fields->m_infoToggles.clicks)
+		if (ModManager::Toggles.clicks)
             labelContent << fmt::format(
                 "Clicks (best att.): {}",
                 static_cast<int>(level->m_clicks)
             ) << std::endl;
         
-		if (m_fields->m_infoToggles.attemptTime) {
+		if (ModManager::Toggles.attemptTime) {
             const std::chrono::seconds seconds(static_cast<int>(level->m_attemptTime));
 
             labelContent << fmt::format(
@@ -258,14 +228,11 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
         );
         m_fields->m_label->setID("level-info-label"_spr);
 
-        m_fields->m_label->setScale(m_fields->m_infoSettings.size);
-        m_fields->m_label->setOpacity(m_fields->m_infoSettings.opacity);
-        m_fields->m_label->setColor(m_fields->m_infoSettings.color);
+        m_fields->m_label->setScale(ModManager::Settings.size);
+        m_fields->m_label->setOpacity(ModManager::Settings.opacity);
+        m_fields->m_label->setColor(ModManager::Settings.color);
 
-        m_fields->m_label->setPosition({
-            m_fields->m_infoSettings.width,
-            m_fields->m_infoSettings.height
-        });
+        m_fields->m_label->setPosition(m_fields->m_position);
 
         // And display it
         this->addChild(m_fields->m_label);

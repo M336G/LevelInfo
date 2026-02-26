@@ -1,3 +1,7 @@
+# Version 1.4.1
+- Optimized settings
+    - Settings are now loaded once when the mod loads and automatically update when changed instead of being reloaded every time the player opens LevelInfoLayer
+
 # Version 1.4.0
 - Added a loading circle while the level information loads (thanks [cue](https://github.com/dankmeme01/cue)!)
 - Changed "Req. Difficulty" to "Requested stars/moons"
