@@ -12,3 +12,4 @@ Feel free to open a [Pull Request](https://github.com/M336G/LevelInfo/pulls) on 
 
 ## Credits
 - [cue](https://github.com/dankmeme01/cue) - makes it much easier to handle the loading circle
+- [BetterInfo](https://github.com/Cvolton/betterinfo-geode/blob/de98c4f6fcbec45d001386103cb4e735cd2ca965/src/utils/ServerUtils.cpp#L21C1-L60C2) - took code from it to know if the mod's executed on a GDPS

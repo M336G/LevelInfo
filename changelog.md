@@ -1,5 +1,5 @@
 # Version 1.4.2
-- Disable the Sent indicator when on a GDPS (also shows a warning once per session if that's the case, which you can disable in the mod's settings)
+- Disable the Sent indicator when on a GDPS (also shows a warning once per session if that's the case, which you can disable in the mod's settings) (thanks [BetterInfo](https://github.com/Cvolton/betterinfo-geode/blob/de98c4f6fcbec45d001386103cb4e735cd2ca965/src/utils/ServerUtils.cpp#L21C1-L60C2)!)
 - Renamed "Text Settings" to "Display Settings"
 
 # Version 1.4.1
