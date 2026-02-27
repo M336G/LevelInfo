@@ -97,7 +97,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                 std::stringstream ss(locked->m_fields->m_levelString);
                 std::string object;
 
-                int ldmObjectCount = 0;
+                size_t ldmObjectCount = 0;
 
                 // Before I forget what that corresponds to https://boomlings.dev/resources/client/level-components/level-string
                 while (std::getline(ss, object, ';')) { // {object};{object};{object};...
