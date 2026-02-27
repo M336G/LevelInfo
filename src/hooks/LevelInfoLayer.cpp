@@ -14,6 +14,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
             SettingsManager::Display.getWidth(),
             SettingsManager::Display.getHeight()
         };
+        std::string m_levelString;
 
         geode::async::TaskHolder<geode::utils::web::WebResponse> m_listener;
     };
@@ -65,19 +66,69 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
             switch (level->m_objectCount) {
                 case 0:
                 case 65535: {
-                    std::string decompressed = cocos2d::ZipUtils::decompressString(
+                    m_fields->m_levelString = cocos2d::ZipUtils::decompressString(
                         level->m_levelString, false, 0
                     );
-                    labelContent << "Object Count: ~" <<
-                        Utils::FormatNumber(std::count(decompressed.begin(), decompressed.end(), ';'))
+                    labelContent << "Objects: ~" <<
+                        Utils::FormatNumber(std::count(m_fields->m_levelString.begin(), m_fields->m_levelString.end(), ';'))
                         << std::endl;
                     break;
                 }
                 default:
-                    labelContent << "Object Count: " << Utils::FormatNumber(level->m_objectCount)
+                    labelContent << "Objects: " << Utils::FormatNumber(level->m_objectCount)
                         << std::endl;
                     break;
             }
+        }
+
+        if (SettingsManager::Toggles.ldmObjectCount && level->m_lowDetailMode) {
+            std::string placeholder = "Objects (LDM): Loading...";
+            labelContent << placeholder << std::endl;
+
+            if (m_fields->m_levelString.empty())
+                m_fields->m_levelString = cocos2d::ZipUtils::decompressString(
+                    level->m_levelString, false, 0
+                );
+            
+            geode::async::spawn([self = geode::WeakRef<MyLevelInfoLayer>(this), placeholder] -> arc::Future<> {
+                auto locked = self.lock();
+                if (!locked || locked->m_fields->m_levelString.empty()) co_return;
+                
+                std::stringstream ss(locked->m_fields->m_levelString);
+                std::string object;
+
+                int ldmObjectCount = 0;
+
+                // Before I forget what that corresponds to https://boomlings.dev/resources/client/level-components/level-string
+                while (std::getline(ss, object, ';')) { // {object};{object};{object};...
+                    // {propertyKey},{propertyValue},{propertyKey},{propertyValue},...
+                    if (object.find(",103,1") == std::string::npos) // 103:1 = high detail object
+                        ldmObjectCount++;
+                }
+
+                geode::queueInMainThread([locked, placeholder, ldmObjectCount] {
+                    if (!locked->m_fields->m_label)
+                        return;
+
+                    std::string labelContent = locked->m_fields->m_label->getString();
+                    size_t pos = labelContent.find(placeholder);
+                    if (pos != std::string::npos)
+                        labelContent.replace(
+                            pos,
+                            placeholder.length(),
+                            fmt::format(
+                                "Objects (LDM): ~{}",
+                                // I think the first one' a level start object which isn't
+                                // really an object since it just contains data but it still
+                                // has the high detail property set to true, so lower this by 1
+                                Utils::FormatNumber(ldmObjectCount - 1)
+                            )
+                        );
+
+                    locked->m_fields->m_label->setString(labelContent.c_str(), true);
+                    locked->updateLayout();
+                });
+            });
         }
 
         if (SettingsManager::Toggles.gameVersion)

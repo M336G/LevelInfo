@@ -17,6 +17,7 @@ CustomStruct::ToggleSettings SettingsManager::Toggles = {
     SettingsManager::Mod->getSettingValue<bool>("show-requested-stars"),
     SettingsManager::Mod->getSettingValue<bool>("show-featured-rank"),
     SettingsManager::Mod->getSettingValue<bool>("show-object-count"),
+    SettingsManager::Mod->getSettingValue<bool>("show-ldm-object-count"),
     SettingsManager::Mod->getSettingValue<bool>("show-game-version"),
     SettingsManager::Mod->getSettingValue<bool>("show-level-version"),
     SettingsManager::Mod->getSettingValue<bool>("show-ldm-existence"),
@@ -63,6 +64,9 @@ $execute {
     });
     geode::listenForSettingChanges<bool>("show-object-count", [](bool enabled) {
         SettingsManager::Toggles.objectCount = enabled;
+    });
+    geode::listenForSettingChanges<bool>("show-ldm-object-count", [](bool enabled) {
+        SettingsManager::Toggles.ldmObjectCount = enabled;
     });
     geode::listenForSettingChanges<bool>("show-game-version", [](bool enabled) {
         SettingsManager::Toggles.gameVersion = enabled;

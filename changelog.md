@@ -1,3 +1,7 @@
+# Version 1.5.1
+- Added the LDM object count indicator (will not appear on levels without Low Detail Mode)
+- Renamed "Object Count" to just "Objects"
+
 # Version 1.5.0
 - Added the level ID indicator
 - Disable the sent indicator on rated levels (avoids an unecessary web request)

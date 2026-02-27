@@ -10,10 +10,10 @@ namespace CustomStruct {
         std::string separator;
 
         float getWidth() const {
-            return cocos2d::CCDirector::get()->getWinSize().width * 0.2 + widthOffset;
+            return cocos2d::CCDirector::get()->getWinSize().width * 0.2f + widthOffset;
         };
         float getHeight() const {
-            return cocos2d::CCDirector::get()->getWinSize().height * 0.7 + heightOffset;
+            return cocos2d::CCDirector::get()->getWinSize().height * 0.7f + heightOffset;
         };
     };
 
@@ -21,6 +21,7 @@ namespace CustomStruct {
         bool requestedStars;
         bool featuredRank;
         bool objectCount;
+        bool ldmObjectCount;
         bool gameVersion;
         bool levelVersion;
         bool ldmExistence;
@@ -36,10 +37,9 @@ namespace CustomStruct {
         bool attemptTime;
 
         bool anyEnabled() const {
-            return requestedStars || featuredRank || objectCount || gameVersion ||
-                levelVersion || ldmExistence || sent || levelID || originalLevel ||
-                twoPlayerMode || editorTime || editorTimeCopies || totalAttempts || totalJumps ||
-                clicks || attemptTime;
+            return requestedStars || featuredRank || objectCount || ldmObjectCount || gameVersion ||
+                levelVersion || ldmExistence || sent || levelID || originalLevel || twoPlayerMode ||
+                editorTime || editorTimeCopies || totalAttempts || totalJumps || clicks || attemptTime;
         }
     };
 }
