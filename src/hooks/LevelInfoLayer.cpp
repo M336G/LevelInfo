@@ -1,6 +1,9 @@
 #include <Geode/modify/LevelInfoLayer.hpp>
 #include <cue/LoadingCircle.hpp> // This may be overkill
-#include "../ModManager.hpp"
+
+#include "../managers/SettingsManager.h"
+#include "../managers/SentCacheManager.h"
+#include "../utils/Utils.h"
 
 class $modify(MyLevelInfoLayer, LevelInfoLayer) {
     struct Fields {
@@ -8,8 +11,8 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
         cocos2d::CCLabelBMFont *m_label;
 
         cocos2d::CCPoint m_position = {
-            ModManager::DisplaySettings.getWidth(),
-            ModManager::DisplaySettings.getHeight()
+            SettingsManager::Display.getWidth(),
+            SettingsManager::Display.getHeight()
         };
 
         geode::async::TaskHolder<geode::utils::web::WebResponse> m_listener;
@@ -19,7 +22,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
         if (!LevelInfoLayer::init(level, challenge))
             return false;
 
-        if (ModManager::DisplaySettings.size > 0 && ModManager::ToggleSettings.anyEnabled()) {
+        if (SettingsManager::Display.size > 0 && SettingsManager::Toggles.anyEnabled()) {
             m_fields->m_loadingCircle->addToLayer(this);
 
             m_fields->m_loadingCircle->setScale(0.5f);
@@ -39,7 +42,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
     void levelDownloadFinished(GJGameLevel *level) {
 		LevelInfoLayer::levelDownloadFinished(level);
 
-        if (ModManager::DisplaySettings.size > 0 && ModManager::ToggleSettings.anyEnabled())
+        if (SettingsManager::Display.size > 0 && SettingsManager::Toggles.anyEnabled())
             showLevelInfo(level);
     };
 
@@ -47,76 +50,58 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
         std::stringstream labelContent;
 
         // Here I define every stats depending on them being enabled or not
-        if (ModManager::ToggleSettings.requestedStars)
-            labelContent << fmt::format(
-                "Requested {}: {}",
-                level->isPlatformer() ? "Moons" : "Stars",
-                level->m_starsRequested
-            ) << std::endl;
+        if (SettingsManager::Toggles.requestedStars)
+            labelContent << "Requested " << (level->isPlatformer() ? "Moons" : "Stars") << ": " <<
+                Utils::FormatNumber(level->m_starsRequested) // Exclusively for trollers on GDPSs
+                << std::endl;
         
-		if (ModManager::ToggleSettings.featuredRank)
-            labelContent << fmt::format(
-                "Featured Rank: {}",
-                level->m_featured > 0
-                    ? std::to_string(level->m_featured)
-                    : "N/A"
-                ) << std::endl;
+		if (SettingsManager::Toggles.featuredRank)
+            labelContent <<  "Featured Rank: " << (level->m_featured > 0
+                    ? Utils::FormatNumber(level->m_featured)
+                    : "N/A")
+                << std::endl;
 
-        if (ModManager::ToggleSettings.objectCount) {
+        if (SettingsManager::Toggles.objectCount) {
             switch (level->m_objectCount) {
                 case 0:
                 case 65535: {
                     std::string decompressed = cocos2d::ZipUtils::decompressString(
                         level->m_levelString, false, 0
                     );
-                    labelContent << fmt::format(
-                        "Object Count: ~{}",
-                        std::count(decompressed.begin(), decompressed.end(), ';')
-                    ) << std::endl;
+                    labelContent << "Object Count: ~" <<
+                        Utils::FormatNumber(std::count(decompressed.begin(), decompressed.end(), ';'))
+                        << std::endl;
                     break;
                 }
                 default:
-                    labelContent << fmt::format(
-                        "Object Count: {}",
-                        level->m_objectCount
-                    ) << std::endl;
+                    labelContent << "Object Count: " << Utils::FormatNumber(level->m_objectCount)
+                        << std::endl;
                     break;
             }
         }
 
-        if (ModManager::ToggleSettings.gameVersion)
-            labelContent << fmt::format(
-                "Game Version: {}",
-                ModManager::GameVersions.count(level->m_gameVersion)
-                    ? ModManager::GameVersions.at(level->m_gameVersion)
-                    : "Pre-1.7"
-                ) << std::endl;
+        if (SettingsManager::Toggles.gameVersion)
+            labelContent << "Game Version: " << Utils::GetGameVersion(level->m_gameVersion) << std::endl;
 
-        if (ModManager::ToggleSettings.twoPlayerMode)
-            labelContent << fmt::format(
-                "2-Player Mode: {}",
-                level->m_twoPlayerMode
-            ) << std::endl;
+        if (SettingsManager::Toggles.twoPlayerMode)
+            labelContent << "2-Player Mode: " << (level->m_twoPlayerMode ? "Yes" : "No")
+                << std::endl;
         
-		if (ModManager::ToggleSettings.levelVersion)
-            labelContent << fmt::format(
-                "Level Version: {}",
-                level->m_levelVersion
-            ) << std::endl;
+		if (SettingsManager::Toggles.levelVersion)
+            labelContent << "Level Version: " << Utils::FormatNumber(level->m_levelVersion) // I mean, why not
+                << std::endl;
         
-		if (ModManager::ToggleSettings.ldmExistence)
-            labelContent << fmt::format(
-                "LDM Existence: {}",
-                level->m_lowDetailMode
-            ) << std::endl;
+		if (SettingsManager::Toggles.ldmExistence)
+            labelContent << "Has LDM: " << (level->m_lowDetailMode ? "Yes" : "No")
+                << std::endl;
         
-        if (ModManager::ToggleSettings.sent && !ModManager::IsGDPS) {
-            auto cached = ModManager::getLevelFromSentCache(level->m_levelID);
+        if (SettingsManager::Toggles.sent && level->m_stars == 0) {
+            auto cached = SentCacheManager::GetLevel(level->m_levelID);
 
-            if (cached.has_value()) {
-                labelContent << fmt::format("Sent: {}", cached.value()) << std::endl;
+            if (cached) {
+                labelContent << "Sent: " << (cached.value() ? "Yes" : "No") << std::endl;
             } else {
-                const std::string placeholder = "Sent: loading...";
+                const std::string placeholder = "Sent: Loading...";
                 labelContent << placeholder << std::endl;
                 
                 auto req = geode::utils::web::WebRequest();
@@ -135,7 +120,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                         bool isSent = body.size() > 0 &&
                             body.contains("sends") && body["sends"].size() > 0;
                         if (body.size() > 0)
-                            ModManager::addLevelToSentCache(levelID, isSent);
+                            SentCacheManager::SaveLevel(levelID, isSent);
 
                         std::string labelContent = locked->m_fields->m_label->getString();
                         size_t pos = labelContent.find(placeholder);
@@ -147,9 +132,9 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                                     "Sent: {}",
                                     body.size() > 0
                                         ? isSent
-                                            ? "true"
-                                            : "false"
-                                        : "failed"
+                                            ? "Yes"
+                                            : "No"
+                                        : "Failed"
                                 )
                             );
 
@@ -160,66 +145,39 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
             }
         }
         
-		if (ModManager::ToggleSettings.originalLevel) {
-            const int levelID = static_cast<int>(level->m_levelID);
-            const int originalLevelID = static_cast<int>(level->m_originalLevel);
+		if (SettingsManager::Toggles.levelID)
+            labelContent << "Level ID: " << level->m_levelID << std::endl;
 
-            labelContent << fmt::format(
-                "Original ID: {}",
-                originalLevelID == 0 || levelID == originalLevelID
-                    ? "N/A" : std::to_string(originalLevelID)
-            ) << std::endl;
-        }
+		if (SettingsManager::Toggles.originalLevel)
+            labelContent << "Original ID: " <<
+                (level->m_originalLevel == 0 || level->m_levelID == level->m_originalLevel
+                ? "N/A" : std::to_string(level->m_originalLevel)) << std::endl;
 
-        if (ModManager::ToggleSettings.editorTime) {
-            const std::chrono::seconds seconds(level->m_workingTime);
+        if (SettingsManager::Toggles.editorTime)
+            labelContent << "Editor: " <<
+                Utils::FormatTime(std::chrono::seconds(level->m_workingTime)) << std::endl;
 
-            labelContent << fmt::format(
-                "Editor: {}h{}m{}s ",
-                duration_cast<std::chrono::hours>(seconds).count(),
-                duration_cast<std::chrono::minutes>(seconds).count() % 60,
-                seconds.count() % 60
-            ) << std::endl;
-        }
+        if (SettingsManager::Toggles.editorTimeCopies)
+            labelContent << "Edit. (+cop.): " <<
+                Utils::FormatTime(std::chrono::seconds(level->m_workingTime + level->m_workingTime2))
+                << std::endl;
 
-        if (ModManager::ToggleSettings.editorTimeCopies) {
-            const std::chrono::seconds seconds(level->m_workingTime + level->m_workingTime2);
-            
-            labelContent << fmt::format(
-                "Edit. (+cop.): {}h{}m{}s ",
-                duration_cast<std::chrono::hours>(seconds).count(),
-                duration_cast<std::chrono::minutes>(seconds).count() % 60,
-                seconds.count() % 60
-            ) << std::endl;
-        }
-
-        if (ModManager::ToggleSettings.totalAttempts)
-            labelContent << fmt::format(
-                "Total Attempts: {}",
-                static_cast<int>(level->m_attempts)
-            ) << std::endl;
+        if (SettingsManager::Toggles.totalAttempts)
+            labelContent << "Total Attempts: " << Utils::FormatNumber(level->m_attempts)
+                << std::endl;
         
-		if (ModManager::ToggleSettings.totalJumps)
-            labelContent << fmt::format(
-                "Total Jumps: {}",
-                static_cast<int>(level->m_jumps)
-            ) << std::endl;
+		if (SettingsManager::Toggles.totalJumps)
+            labelContent << "Total Jumps: " << Utils::FormatNumber(level->m_jumps)
+                << std::endl;
         
-		if (ModManager::ToggleSettings.clicks)
-            labelContent << fmt::format(
-                "Clicks (best att.): {}",
-                static_cast<int>(level->m_clicks)
-            ) << std::endl;
+		if (SettingsManager::Toggles.clicks)
+            labelContent << "Clicks (best att.): " << Utils::FormatNumber(level->m_clicks)
+                << std::endl;
         
-		if (ModManager::ToggleSettings.attemptTime) {
-            const std::chrono::seconds seconds(static_cast<int>(level->m_attemptTime));
-
-            labelContent << fmt::format(
-                "Time (best att.): {}m{}s",
-                duration_cast<std::chrono::minutes>(seconds).count() % 60,
-                seconds.count() % 60
-            ) << std::endl;
-        }
+		if (SettingsManager::Toggles.attemptTime)
+            labelContent << "Time (best att.): " <<
+                Utils::FormatTime(std::chrono::seconds(static_cast<int>(level->m_attemptTime)))
+                << std::endl;
 
         // Once we got all the values for the label, create it and set its settings
         m_fields->m_label = cocos2d::CCLabelBMFont::create(
@@ -228,9 +186,9 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
         );
         m_fields->m_label->setID("level-info-label"_spr);
 
-        m_fields->m_label->setScale(ModManager::DisplaySettings.size);
-        m_fields->m_label->setOpacity(ModManager::DisplaySettings.opacity);
-        m_fields->m_label->setColor(ModManager::DisplaySettings.color);
+        m_fields->m_label->setScale(SettingsManager::Display.size);
+        m_fields->m_label->setOpacity(SettingsManager::Display.opacity);
+        m_fields->m_label->setColor(SettingsManager::Display.color);
 
         m_fields->m_label->setPosition(m_fields->m_position);
 

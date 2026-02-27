@@ -1,6 +1,15 @@
-# Version 1.4.2
-- Disable the Sent indicator when on a GDPS (also shows a warning once per session if that's the case, which you can disable in the mod's settings) (thanks [BetterInfo](https://github.com/Cvolton/betterinfo-geode/blob/de98c4f6fcbec45d001386103cb4e735cd2ca965/src/utils/ServerUtils.cpp#L21C1-L60C2)!)
+# Version 1.5.0
+- Added the level ID indicator
+- Disable the sent indicator on rated levels (avoids an unecessary web request)
+- Added a number separator setting for large numbers (commas, spaces, or none)
 - Renamed "Text Settings" to "Display Settings"
+- Shortened some settings' name in Display Settings
+- Empty/zero values now show "N/A"
+- Replaced "false" & "true" with "No" & "Yes"
+- Renamed "LDM Existence" to "Has LDM"
+- Better formatting for time related values
+- Clear the sent cache when the sent indicator setting is disabled
+- Code structure rework & optimization
 
 # Version 1.4.1
 - Optimized settings

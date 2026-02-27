@@ -1,6 +1,6 @@
 {
   "geode": "5.1.0",
-  "version": "v1.4.2",
+  "version": "v1.5.0",
 	"gd": {
 		"win": "2.2081",
 		"android": "2.2081",
@@ -29,7 +29,7 @@
       "name": "Display Settings"
     },
     "text-width-offset": {
-      "name": "Text X offset",
+      "name": "X-axis Offset",
       "description": "Set the X-axis' offset of the text that will be displayed on a level's page",
       "type": "int",
       "default": 0,
@@ -40,7 +40,7 @@
       }
     },
     "text-height-offset": {
-      "name": "Text Y offset",
+      "name": "Y-axis Offset",
       "description": "Set the Y-axis' offset of the text that will be displayed on a level's page",
       "type": "int",
       "default": 0,
@@ -51,7 +51,7 @@
       }
     },
     "text-size": {
-      "name": "Text size",
+      "name": "Size",
       "description": "Define the size of the text that will be displayed on a level's page",
       "type": "float",
       "default": 0.25,
@@ -62,7 +62,7 @@
       }
     },
     "text-opacity": {
-      "name": "Text opacity",
+      "name": "Opacity",
       "description": "Set the opacity of the text that will be displayed on a level's page",
       "type": "int",
       "default": 100,
@@ -73,10 +73,17 @@
       }
     },
     "text-color": {
-      "name": "Text color",
+      "name": "Color",
       "description": "Set the color of the text that will be displayed on a level's page",
       "type": "color",
       "default": "#FFFFFF"
+    },
+    "number-separator": {
+      "name": "Number Separator",
+      "description": "Choose a separator for big numbers",
+      "type": "string",
+      "default": "Comma",
+      "one-of": ["Comma", "Space", "None"]
     },
 
     "toggle-settings": {
@@ -120,7 +127,7 @@
       "default": true
     },
     "show-ldm-existence": {
-      "name": "Low Detail Mode Existence",
+      "name": "Has LDM",
       "description": "Indicates whether a Low Detail Mode exists or not on a level",
       "type": "bool",
       "default": true
@@ -128,6 +135,12 @@
     "show-sent": {
       "name": "Sent",
       "description": "Indicates whether the level has been sent by Moderators or not",
+      "type": "bool",
+      "default": true
+    },
+    "show-level-id": {
+      "name": "Level ID",
+      "description": "Display the level's ID",
       "type": "bool",
       "default": true
     },
@@ -168,21 +181,10 @@
       "default": true
     },
     "show-attempt-time": {
-      "name": "Best time",
+      "name": "Best Time",
       "description": "Show your best time on a level",
       "type": "bool",
       "default": true
-    },
-
-    "other-settings": {
-      "type": "title",
-      "name": "Other Settings"
-    },
-    "disable-gdps-warning": {
-      "name": "Disable GDPS warning",
-      "description": "Disable the warning you get when you're on a GDPS and have the sent indicator toggled on",
-      "type": "bool",
-      "default": false
     }
   }
 }
