@@ -31,15 +31,15 @@ namespace CustomStruct {
         bool twoPlayerMode;
         bool editorTime;
         bool editorTimeCopies;
-        bool totalAttempts;
-        bool totalJumps;
+        bool attempts;
+        bool jumps;
         bool clicks;
         bool attemptTime;
 
         bool anyEnabled() const {
             return requestedStars || featuredRank || objectCount || ldmObjectCount || gameVersion ||
                 levelVersion || ldmExistence || sent || levelID || originalLevel || twoPlayerMode ||
-                editorTime || editorTimeCopies || totalAttempts || totalJumps || clicks || attemptTime;
+                editorTime || editorTimeCopies || attempts || jumps || clicks || attemptTime;
         }
     };
 }

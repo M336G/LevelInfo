@@ -46,4 +46,4 @@ std::string Utils::FormatTime(std::chrono::seconds seconds) {
     string += std::to_string(seconds.count() % 60) + "s";
     
     return string;
-}
+};

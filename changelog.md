@@ -1,3 +1,11 @@
+# Version 1.5.2
+- Added credits for [SendDB](https://senddb.dev/) (should have been added in v1.3.11)
+- Improved the mod's description
+- Improved settings' description
+- The sent indicator will now show "Rated" instead of not being added when on a rated level with the setting enabled
+- The LDM object count indicator will now show "N/A" instead of not being added when on a level without a Low Detail Mode
+- Renamed "Total Attempts" & "Total Jumps" to just "Attempts" & "Jumps"
+
 # Version 1.5.1
 - Added the LDM object count indicator (will not appear on levels without Low Detail Mode)
 - Renamed "Object Count" to just "Objects"

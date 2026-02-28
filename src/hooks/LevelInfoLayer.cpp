@@ -81,54 +81,60 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
             }
         }
 
-        if (SettingsManager::Toggles.ldmObjectCount && level->m_lowDetailMode) {
-            std::string placeholder = "Objects (LDM): Loading...";
-            labelContent << placeholder << std::endl;
+        if (SettingsManager::Toggles.ldmObjectCount) {
+            if (level->m_lowDetailMode) {
+                std::string placeholder = "Objects (LDM): Loading...";
+                labelContent << placeholder << std::endl;
 
-            if (m_fields->m_levelString.empty())
-                m_fields->m_levelString = cocos2d::ZipUtils::decompressString(
-                    level->m_levelString, false, 0
-                );
-            
-            geode::async::spawn([self = geode::WeakRef<MyLevelInfoLayer>(this), placeholder] -> arc::Future<> {
-                auto locked = self.lock();
-                if (!locked || locked->m_fields->m_levelString.empty()) co_return;
+                if (m_fields->m_levelString.empty())
+                    m_fields->m_levelString = cocos2d::ZipUtils::decompressString(
+                        level->m_levelString, false, 0
+                    );
                 
-                std::stringstream ss(locked->m_fields->m_levelString);
-                std::string object;
+                geode::async::spawn([self = geode::WeakRef<MyLevelInfoLayer>(this), placeholder] -> arc::Future<> {
+                    auto locked = self.lock();
+                    if (!locked || locked->m_fields->m_levelString.empty()) co_return;
+                    
+                    std::stringstream ss(locked->m_fields->m_levelString);
+                    std::string object;
 
-                size_t ldmObjectCount = 0;
+                    size_t ldmObjectCount = 0;
 
-                // Before I forget what that corresponds to https://boomlings.dev/resources/client/level-components/level-string
-                while (std::getline(ss, object, ';')) { // {object};{object};{object};...
-                    // {propertyKey},{propertyValue},{propertyKey},{propertyValue},...
-                    if (object.find(",103,1") == std::string::npos) // 103:1 = high detail object
-                        ldmObjectCount++;
-                }
+                    // Before I forget what that corresponds to https://boomlings.dev/resources/client/level-components/level-string
+                    // {object};{object};{object};...
+                    while (std::getline(ss, object, ';')) {
+                        // {propertyKey},{propertyValue},{propertyKey},{propertyValue},...
+                        if (object.find(",103,1") == std::string::npos) // 103:1 = high detail object
+                            ldmObjectCount++;
+                    }
 
-                geode::queueInMainThread([locked, placeholder, ldmObjectCount] {
-                    if (!locked->m_fields->m_label)
-                        return;
+                    geode::queueInMainThread([locked, placeholder, ldmObjectCount] {
+                        if (!locked->m_fields->m_label)
+                            return;
 
-                    std::string labelContent = locked->m_fields->m_label->getString();
-                    size_t pos = labelContent.find(placeholder);
-                    if (pos != std::string::npos)
-                        labelContent.replace(
-                            pos,
-                            placeholder.length(),
-                            fmt::format(
-                                "Objects (LDM): ~{}",
-                                // I think the first one' a level start object which isn't
-                                // really an object since it just contains data but it still
-                                // has the high detail property set to true, so lower this by 1
-                                Utils::FormatNumber(ldmObjectCount - 1)
-                            )
-                        );
+                        std::string labelContent = locked->m_fields->m_label->getString();
+                        size_t pos = labelContent.find(placeholder);
+                        if (pos != std::string::npos)
+                            labelContent.replace(
+                                pos,
+                                placeholder.length(),
+                                fmt::format(
+                                    "Objects (LDM): ~{}",
+                                    // I think the first one' a level start object
+                                    // which isn't really an object since it just
+                                    // contains data but it still has the high detail
+                                    // property set to true, so lower this by 1
+                                    Utils::FormatNumber(ldmObjectCount - 1)
+                                )
+                            );
 
-                    locked->m_fields->m_label->setString(labelContent.c_str(), true);
-                    locked->updateLayout();
+                        locked->m_fields->m_label->setString(labelContent.c_str(), true);
+                        locked->updateLayout();
+                    });
                 });
-            });
+            } else {
+                labelContent << "Objects (LDM): N/A" << std::endl;
+            }
         }
 
         if (SettingsManager::Toggles.gameVersion)
@@ -146,53 +152,59 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
             labelContent << "Has LDM: " << (level->m_lowDetailMode ? "Yes" : "No")
                 << std::endl;
         
-        if (SettingsManager::Toggles.sent && level->m_stars == 0) {
-            auto cached = SentCacheManager::GetLevel(level->m_levelID);
+        if (SettingsManager::Toggles.sent) {
+            if (level->m_stars == 0) {
+                auto cached = SentCacheManager::GetLevel(level->m_levelID);
 
-            if (cached) {
-                labelContent << "Sent: " << (cached.value() ? "Yes" : "No") << std::endl;
+                if (cached) {
+                    labelContent << "Sent: " << (cached.value() ? "Yes" : "No")
+                        << std::endl;
+                } else {
+                    const std::string placeholder = "Sent: Loading...";
+                    labelContent << placeholder << std::endl;
+                    
+                    auto req = geode::utils::web::WebRequest();
+                    auto levelID = static_cast<int>(level->m_levelID);
+
+                    // This will call SendDB's API to know if the level was sent or
+                    // not. The actual sent field will be updated after the request
+                    // is completed
+                    m_fields->m_listener.spawn(
+                        req.get(fmt::format("https://api.senddb.dev/api/v1/level/{}", levelID)),
+                        [self = geode::WeakRef<MyLevelInfoLayer>(this), placeholder, levelID](geode::utils::web::WebResponse res) {
+                            auto locked = self.lock();
+                            if (!locked || !locked->m_fields->m_label) return;
+                            
+                            matjson::Value body = res.json().unwrapOrDefault();
+
+                            bool isSent = body.size() > 0 &&
+                                body.contains("sends") && body["sends"].size() > 0;
+                            if (body.size() > 0)
+                                SentCacheManager::SaveLevel(levelID, isSent);
+
+                            std::string labelContent = locked->m_fields->m_label->getString();
+                            size_t pos = labelContent.find(placeholder);
+                            if (pos != std::string::npos)
+                                labelContent.replace(
+                                    pos,
+                                    placeholder.length(),
+                                    fmt::format(
+                                        "Sent: {}",
+                                        body.size() > 0
+                                            ? isSent
+                                                ? "Yes"
+                                                : "No"
+                                            : "Failed"
+                                    )
+                                );
+
+                            locked->m_fields->m_label->setString(labelContent.c_str(), true);
+                            locked->updateLayout();
+                        }
+                    );
+                }
             } else {
-                const std::string placeholder = "Sent: Loading...";
-                labelContent << placeholder << std::endl;
-                
-                auto req = geode::utils::web::WebRequest();
-                auto levelID = static_cast<int>(level->m_levelID);
-
-                // This will call SendDB's API to know if the level was sent or not. The
-                // actual sent field will be updated after the request is completed
-                m_fields->m_listener.spawn(
-                    req.get(fmt::format("https://api.senddb.dev/api/v1/level/{}", levelID)),
-                    [self = geode::WeakRef<MyLevelInfoLayer>(this), placeholder, levelID](geode::utils::web::WebResponse res) {
-                        auto locked = self.lock();
-                        if (!locked || !locked->m_fields->m_label) return;
-                        
-                        matjson::Value body = res.json().unwrapOrDefault();
-
-                        bool isSent = body.size() > 0 &&
-                            body.contains("sends") && body["sends"].size() > 0;
-                        if (body.size() > 0)
-                            SentCacheManager::SaveLevel(levelID, isSent);
-
-                        std::string labelContent = locked->m_fields->m_label->getString();
-                        size_t pos = labelContent.find(placeholder);
-                        if (pos != std::string::npos)
-                            labelContent.replace(
-                                pos,
-                                placeholder.length(),
-                                fmt::format(
-                                    "Sent: {}",
-                                    body.size() > 0
-                                        ? isSent
-                                            ? "Yes"
-                                            : "No"
-                                        : "Failed"
-                                )
-                            );
-
-                        locked->m_fields->m_label->setString(labelContent.c_str(), true);
-                        locked->updateLayout();
-                    }
-                );
+                labelContent << "Sent: Rated" << std::endl;
             }
         }
         
@@ -213,12 +225,12 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                 Utils::FormatTime(std::chrono::seconds(level->m_workingTime + level->m_workingTime2))
                 << std::endl;
 
-        if (SettingsManager::Toggles.totalAttempts)
-            labelContent << "Total Attempts: " << Utils::FormatNumber(level->m_attempts)
+        if (SettingsManager::Toggles.attempts)
+            labelContent << "Attempts: " << Utils::FormatNumber(level->m_attempts)
                 << std::endl;
         
-		if (SettingsManager::Toggles.totalJumps)
-            labelContent << "Total Jumps: " << Utils::FormatNumber(level->m_jumps)
+		if (SettingsManager::Toggles.jumps)
+            labelContent << "Jumps: " << Utils::FormatNumber(level->m_jumps)
                 << std::endl;
         
 		if (SettingsManager::Toggles.clicks)

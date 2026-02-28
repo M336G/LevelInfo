@@ -1,36 +1,34 @@
 #include "SettingsManager.h"
 #include "SentCacheManager.h"
 
-geode::Mod *SettingsManager::Mod = geode::Mod::get();
-
 // First initialize all the parameters
 CustomStruct::DisplaySettings SettingsManager::Display = {
-    static_cast<int>(Mod->getSettingValue<int64_t>("text-width-offset")),
-    static_cast<int>(Mod->getSettingValue<int64_t>("text-height-offset")),
-    static_cast<float>(Mod->getSettingValue<double>("text-size")),
-    static_cast<int>(round(static_cast<double>(Mod->getSettingValue<int64_t>("text-opacity")) / 100 * 255)),
-    SettingsManager::Mod->getSettingValue<cocos2d::ccColor3B>("text-color"),
-    SettingsManager::Mod->getSettingValue<std::string>("number-separator")
+    static_cast<int>(geode::Mod::get()->getSettingValue<int64_t>("text-width-offset")),
+    static_cast<int>(geode::Mod::get()->getSettingValue<int64_t>("text-height-offset")),
+    static_cast<float>(geode::Mod::get()->getSettingValue<double>("text-size")),
+    static_cast<int>(round(static_cast<double>(geode::Mod::get()->getSettingValue<int64_t>("text-opacity")) / 100 * 255)),
+    geode::Mod::get()->getSettingValue<cocos2d::ccColor3B>("text-color"),
+    geode::Mod::get()->getSettingValue<std::string>("number-separator")
 };
 
 CustomStruct::ToggleSettings SettingsManager::Toggles = {
-    SettingsManager::Mod->getSettingValue<bool>("show-requested-stars"),
-    SettingsManager::Mod->getSettingValue<bool>("show-featured-rank"),
-    SettingsManager::Mod->getSettingValue<bool>("show-object-count"),
-    SettingsManager::Mod->getSettingValue<bool>("show-ldm-object-count"),
-    SettingsManager::Mod->getSettingValue<bool>("show-game-version"),
-    SettingsManager::Mod->getSettingValue<bool>("show-level-version"),
-    SettingsManager::Mod->getSettingValue<bool>("show-ldm-existence"),
-    SettingsManager::Mod->getSettingValue<bool>("show-sent"),
-    SettingsManager::Mod->getSettingValue<bool>("show-level-id"),
-    SettingsManager::Mod->getSettingValue<bool>("show-original-level-id"),
-    SettingsManager::Mod->getSettingValue<bool>("show-two-player-mode"),
-    SettingsManager::Mod->getSettingValue<bool>("show-editor-time"),
-    SettingsManager::Mod->getSettingValue<bool>("show-editor-time-copies"),
-    SettingsManager::Mod->getSettingValue<bool>("show-total-attempts"),
-    SettingsManager::Mod->getSettingValue<bool>("show-total-jumps"),
-    SettingsManager::Mod->getSettingValue<bool>("show-clicks"),
-    SettingsManager::Mod->getSettingValue<bool>("show-attempt-time")
+    geode::Mod::get()->getSettingValue<bool>("show-requested-stars"),
+    geode::Mod::get()->getSettingValue<bool>("show-featured-rank"),
+    geode::Mod::get()->getSettingValue<bool>("show-object-count"),
+    geode::Mod::get()->getSettingValue<bool>("show-ldm-object-count"),
+    geode::Mod::get()->getSettingValue<bool>("show-game-version"),
+    geode::Mod::get()->getSettingValue<bool>("show-level-version"),
+    geode::Mod::get()->getSettingValue<bool>("show-ldm-existence"),
+    geode::Mod::get()->getSettingValue<bool>("show-sent"),
+    geode::Mod::get()->getSettingValue<bool>("show-level-id"),
+    geode::Mod::get()->getSettingValue<bool>("show-original-level-id"),
+    geode::Mod::get()->getSettingValue<bool>("show-two-player-mode"),
+    geode::Mod::get()->getSettingValue<bool>("show-editor-time"),
+    geode::Mod::get()->getSettingValue<bool>("show-editor-time-copies"),
+    geode::Mod::get()->getSettingValue<bool>("show-attempts"),
+    geode::Mod::get()->getSettingValue<bool>("show-jumps"),
+    geode::Mod::get()->getSettingValue<bool>("show-clicks"),
+    geode::Mod::get()->getSettingValue<bool>("show-attempt-time")
 };
 
 // There is DEFINETELY a better way to do this but if it works it works
@@ -98,11 +96,11 @@ $execute {
     geode::listenForSettingChanges<bool>("show-editor-time-copies", [](bool enabled) {
         SettingsManager::Toggles.editorTimeCopies = enabled;
     });
-    geode::listenForSettingChanges<bool>("show-total-attempts", [](bool enabled) {
-        SettingsManager::Toggles.totalAttempts = enabled;
+    geode::listenForSettingChanges<bool>("show-attempts", [](bool enabled) {
+        SettingsManager::Toggles.attempts = enabled;
     });
-    geode::listenForSettingChanges<bool>("show-total-jumps", [](bool enabled) {
-        SettingsManager::Toggles.totalJumps = enabled;
+    geode::listenForSettingChanges<bool>("show-jumps", [](bool enabled) {
+        SettingsManager::Toggles.jumps = enabled;
     });
     geode::listenForSettingChanges<bool>("show-clicks", [](bool enabled) {
         SettingsManager::Toggles.clicks = enabled;
