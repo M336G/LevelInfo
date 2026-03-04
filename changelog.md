@@ -1,3 +1,6 @@
+# Version 1.5.3
+- Fixed the informational text being displayed twice if the level was updated
+
 # Version 1.5.2
 - Added credits for [SendDB](https://senddb.dev/) (should have been added in v1.3.11)
 - Improved the mod's description
