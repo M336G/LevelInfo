@@ -1,3 +1,7 @@
+# Version 1.5.4
+- Better iteration system for showing the LDM object count
+- More optimization
+
 # Version 1.5.3
 - Fixed the informational text being displayed twice if the level was updated
 

@@ -1,22 +1,22 @@
 #include <Geode/modify/LevelInfoLayer.hpp>
 #include <cue/LoadingCircle.hpp> // This may be overkill
+#include <asp/iter.hpp>
 
 #include "../managers/SettingsManager.h"
 #include "../managers/SentCacheManager.h"
 #include "../utils/Utils.h"
 
+using namespace geode::prelude;
+
 class $modify(MyLevelInfoLayer, LevelInfoLayer) {
     struct Fields {
-        cue::LoadingCircle *m_loadingCircle = cue::LoadingCircle::create();
-        cocos2d::CCLabelBMFont *m_label;
+        cue::LoadingCircle* m_loadingCircle = cue::LoadingCircle::create();
+        CCLabelBMFont* m_label;
 
-        cocos2d::CCPoint m_position = {
-            SettingsManager::Display.getWidth(),
-            SettingsManager::Display.getHeight()
-        };
+        CCPoint const m_position = SettingsManager::Display.getPosition();
         std::string m_levelString;
 
-        geode::async::TaskHolder<geode::utils::web::WebResponse> m_listener;
+        async::TaskHolder<utils::web::WebResponse> m_listener;
     };
 
     bool init(GJGameLevel* level, bool challenge) {
@@ -40,7 +40,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
     };
 
     // This will be called if the level just finished downloading
-    void levelDownloadFinished(GJGameLevel *level) {
+    void levelDownloadFinished(GJGameLevel* level) {
 		LevelInfoLayer::levelDownloadFinished(level);
 
         if (SettingsManager::Display.size > 0 && SettingsManager::Toggles.anyEnabled())
@@ -49,8 +49,8 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
     
     // If the level is updated, avoid displaying the label twice by deleting the first
     // one and letting it create a new updated one
-    void levelUpdateFinished(GJGameLevel *level, UpdateResponse response) {
-        if (auto label = static_cast<cocos2d::CCLabelBMFont *>(this->getChildByIDRecursive("level-info-label"_spr)))
+    void levelUpdateFinished(GJGameLevel* level, UpdateResponse response) {
+        if (auto label = static_cast<CCLabelBMFont*>(this->getChildByIDRecursive("level-info-label"_spr)))
             label->removeFromParentAndCleanup(true);
 
         return LevelInfoLayer::levelUpdateFinished(level, response);
@@ -75,7 +75,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
             switch (level->m_objectCount) {
                 case 0:
                 case 65535: {
-                    m_fields->m_levelString = cocos2d::ZipUtils::decompressString(
+                    m_fields->m_levelString = ZipUtils::decompressString(
                         level->m_levelString, false, 0
                     );
                     labelContent << "Objects: ~" <<
@@ -92,37 +92,36 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
 
         if (SettingsManager::Toggles.ldmObjectCount) {
             if (level->m_lowDetailMode) {
-                std::string placeholder = "Objects (LDM): Loading...";
+                std::string_view const placeholder = "Objects (LDM): Loading...";
                 labelContent << placeholder << std::endl;
 
                 if (m_fields->m_levelString.empty())
-                    m_fields->m_levelString = cocos2d::ZipUtils::decompressString(
+                    m_fields->m_levelString = ZipUtils::decompressString(
                         level->m_levelString, false, 0
                     );
                 
-                geode::async::spawn([self = geode::WeakRef<MyLevelInfoLayer>(this), placeholder] -> arc::Future<> {
+                async::spawn([self = WeakRef<MyLevelInfoLayer>(this), placeholder] -> arc::Future<> {
                     auto locked = self.lock();
-                    if (!locked || locked->m_fields->m_levelString.empty()) co_return;
-                    
-                    std::stringstream ss(locked->m_fields->m_levelString);
-                    std::string object;
+                    if (!locked || locked->m_fields->m_levelString.empty())
+                        co_return;
 
                     size_t ldmObjectCount = 0;
 
                     // Before I forget what that corresponds to https://boomlings.dev/resources/client/level-components/level-string
                     // {object};{object};{object};...
-                    while (std::getline(ss, object, ';')) {
-                        // {propertyKey},{propertyValue},{propertyKey},{propertyValue},...
-                        if (object.find(",103,1") == std::string::npos) // 103:1 = high detail object
-                            ldmObjectCount++;
-                    }
+                    asp::iter::split(locked->m_fields->m_levelString, ';')
+                    .forEach([&ldmObjectCount](std::string_view object) {
+                            if (object.find(",103,1") == std::string::npos) // 103:1 = high detail object
+                                ldmObjectCount++;
+                        }
+                    );
 
-                    geode::queueInMainThread([locked, placeholder, ldmObjectCount] {
+                    queueInMainThread([locked, placeholder, ldmObjectCount] {
                         if (!locked->m_fields->m_label)
                             return;
 
                         std::string labelContent = locked->m_fields->m_label->getString();
-                        size_t pos = labelContent.find(placeholder);
+                        auto pos = labelContent.find(placeholder);
                         if (pos != std::string::npos)
                             labelContent.replace(
                                 pos,
@@ -169,10 +168,10 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                     labelContent << "Sent: " << (cached.value() ? "Yes" : "No")
                         << std::endl;
                 } else {
-                    const std::string placeholder = "Sent: Loading...";
+                    std::string const placeholder = "Sent: Loading...";
                     labelContent << placeholder << std::endl;
                     
-                    auto req = geode::utils::web::WebRequest();
+                    auto req = utils::web::WebRequest();
                     auto levelID = static_cast<int>(level->m_levelID);
 
                     // This will call SendDB's API to know if the level was sent or
@@ -180,7 +179,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                     // is completed
                     m_fields->m_listener.spawn(
                         req.get(fmt::format("https://api.senddb.dev/api/v1/level/{}", levelID)),
-                        [self = geode::WeakRef<MyLevelInfoLayer>(this), placeholder, levelID](geode::utils::web::WebResponse res) {
+                        [self = WeakRef<MyLevelInfoLayer>(this), placeholder, levelID](utils::web::WebResponse res) {
                             auto locked = self.lock();
                             if (!locked || !locked->m_fields->m_label) return;
                             
@@ -252,7 +251,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                 << std::endl;
 
         // Once we got all the values for the label, create it and set its settings
-        m_fields->m_label = cocos2d::CCLabelBMFont::create(
+        m_fields->m_label = CCLabelBMFont::create(
             labelContent.str().c_str(),
             "bigFont.fnt"
         );

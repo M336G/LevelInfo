@@ -9,12 +9,14 @@ namespace CustomStruct {
         cocos2d::ccColor3B color;
         std::string separator;
 
-        float getWidth() const {
-            return cocos2d::CCDirector::get()->getWinSize().width * 0.2f + widthOffset;
-        };
-        float getHeight() const {
-            return cocos2d::CCDirector::get()->getWinSize().height * 0.7f + heightOffset;
-        };
+        cocos2d::CCPoint getPosition() const {
+            auto winSize = cocos2d::CCDirector::get()->getWinSize();
+
+            return {
+                winSize.width * 0.2f + widthOffset,
+                winSize.height * 0.7f + heightOffset
+            };
+        }
     };
 
     struct ToggleSettings {

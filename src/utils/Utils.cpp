@@ -1,7 +1,7 @@
 #include "Utils.h"
 #include "../managers/SettingsManager.h"
 
-std::unordered_map<int, std::string> Utils::GameVersions = {
+std::unordered_map<int, std::string_view> Utils::GameVersions = {
     { 22, "2.2" },
     { 21, "2.1" },
     { 20, "2.0" },
@@ -10,7 +10,7 @@ std::unordered_map<int, std::string> Utils::GameVersions = {
     { 10, "1.7" }
 };
 
-std::string Utils::GetGameVersion(int gameVersion) {
+std::string_view Utils::GetGameVersion(int gameVersion) {
     if (Utils::GameVersions.count(gameVersion))
         return Utils::GameVersions.at(gameVersion);
     return "Pre-1.7";
