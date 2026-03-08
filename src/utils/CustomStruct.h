@@ -5,7 +5,7 @@ namespace CustomStruct {
         int widthOffset;
         int heightOffset;
         float size;
-        int opacity;
+        float opacity;
         cocos2d::ccColor3B color;
         std::string separator;
 
@@ -44,4 +44,9 @@ namespace CustomStruct {
                 editorTime || editorTimeCopies || attempts || jumps || clicks || attemptTime;
         }
     };
-}
+
+    struct OtherSettings {
+        std::string sendDbApiUrl;
+        bool showGDPSWarning;
+    };
+};

@@ -191,6 +191,30 @@
       "description": "Show the best time you did on a level",
       "type": "bool",
       "default": true
+    },
+
+    "other-settings": {
+      "type": "title",
+      "name": "Other Settings"
+    },
+    "senddb-api-url": {
+      "name": "SendDB API URL",
+      "description": "Only modify this if you're on a GDPS and host a custom SendDB instance (or something with a similar API response)",
+      "type": "string",
+      "filter": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:/.-_%?&=[]@",
+      "default": "https://api.senddb.dev/api/v1/level/"
+    },
+    "disable-gdps-warning": {
+      "name": "Disable GDPS Warning",
+      "description": "Disable the warning you get when you're on a GDPS and have the sent indicator toggled on",
+      "type": "bool",
+      "default": false
+    }
+  },
+  "dependencies": {
+    "km7dev.server_api": {
+      "version": "v4.0.0",
+      "required": false
     }
   }
 }

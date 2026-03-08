@@ -8,7 +8,7 @@ CustomStruct::DisplaySettings SettingsManager::Display = {
     Mod::get()->getSettingValue<int>("text-width-offset"),
     Mod::get()->getSettingValue<int>("text-height-offset"),
     Mod::get()->getSettingValue<float>("text-size"),
-    static_cast<int>(round(Mod::get()->getSettingValue<int>("text-opacity") / 100.f * 255)),
+    round(Mod::get()->getSettingValue<int>("text-opacity") / 100.f * 255),
     Mod::get()->getSettingValue<ccColor3B>("text-color"),
     Mod::get()->getSettingValue<std::string>("number-separator")
 };
@@ -33,6 +33,11 @@ CustomStruct::ToggleSettings SettingsManager::Toggles = {
     Mod::get()->getSettingValue<bool>("show-attempt-time")
 };
 
+CustomStruct::OtherSettings SettingsManager::Other = {
+    Mod::get()->getSettingValue<std::string>("senddb-api-url"),
+    !Mod::get()->getSettingValue<bool>("disable-gdps-warning"),
+};
+
 // There is DEFINETELY a better way to do this but if it works it works
 $execute {
     // Display Settings
@@ -46,7 +51,7 @@ $execute {
         SettingsManager::Display.size = size;
     });
     listenForSettingChanges<int>("text-opacity", [](int opacity) {
-        SettingsManager::Display.opacity = static_cast<int>(round(opacity / 100.f * 255));
+        SettingsManager::Display.opacity = round(opacity / 100.f * 255);
     });
     listenForSettingChanges<ccColor3B>("text-color", [](ccColor3B color) {
         SettingsManager::Display.color = color;
@@ -110,4 +115,14 @@ $execute {
     listenForSettingChanges<bool>("show-attempt-time", [](bool enabled) {
         SettingsManager::Toggles.attemptTime = enabled;
     });
+
+    // Other Settings
+    listenForSettingChanges<std::string>("senddb-api-url", [](std::string url) {
+        SettingsManager::Other.sendDbApiUrl = url;
+    });
+    listenForSettingChanges<bool>("disable-gdps-warning", [](bool enabled) {
+        SettingsManager::Other.showGDPSWarning = !enabled;
+    });
 };
+
+bool SettingsManager::ShowedGDPSWarning = false;
