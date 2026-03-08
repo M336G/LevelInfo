@@ -1,3 +1,6 @@
+# Version 1.5.5
+- Much more accurate object count (also applies to the Low Detail Mode one)
+
 # Version 1.5.4
 - Better iteration system for showing the LDM object count
 - More optimization

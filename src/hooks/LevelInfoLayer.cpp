@@ -14,7 +14,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
         CCLabelBMFont* m_label;
 
         CCPoint const m_position = SettingsManager::Display.getPosition();
-        std::string m_levelString;
+        std::string m_decompressedLevelString;
 
         async::TaskHolder<utils::web::WebResponse> m_listener;
     };
@@ -57,6 +57,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
     };
 
 	void showLevelInfo(GJGameLevel* level) {
+        Ref<MyLevelInfoLayer> self = this;
         std::stringstream labelContent;
 
         // Here I define every stats depending on them being enabled or not
@@ -75,12 +76,43 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
             switch (level->m_objectCount) {
                 case 0:
                 case 65535: {
-                    m_fields->m_levelString = ZipUtils::decompressString(
+                    std::string_view const placeholder = "Objects: Loading...";
+                    labelContent << placeholder << std::endl;
+
+                    m_fields->m_decompressedLevelString = ZipUtils::decompressString(
                         level->m_levelString, false, 0
                     );
-                    labelContent << "Objects: ~" <<
-                        Utils::FormatNumber(std::count(m_fields->m_levelString.begin(), m_fields->m_levelString.end(), ';'))
-                        << std::endl;
+                    
+                    async::spawn(
+                        [self]() -> arc::Future<size_t> {
+                            co_return co_await async::runtime().spawnBlocking<size_t>([self] {
+                                size_t count = 0;
+
+                                for (auto& object : asp::iter::split(self->m_fields->m_decompressedLevelString, ';')) {
+                                    if (!object.empty() && !object.starts_with("k"))
+                                        count++;
+                                }
+
+                                return count;
+                            });
+                        },
+                        [self, placeholder](size_t count) {
+                            std::string labelContent = self->m_fields->m_label->getString();
+                            auto pos = labelContent.find(placeholder);
+                            if (pos != std::string::npos)
+                                labelContent.replace(
+                                    pos,
+                                    placeholder.length(),
+                                    fmt::format(
+                                        "Objects: ~{}",
+                                        Utils::FormatNumber(count)
+                                    )
+                                );
+
+                            self->m_fields->m_label->setString(labelContent.c_str(), true);
+                            self->updateLayout();
+                        }
+                    );
                     break;
                 }
                 default:
@@ -95,32 +127,30 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                 std::string_view const placeholder = "Objects (LDM): Loading...";
                 labelContent << placeholder << std::endl;
 
-                if (m_fields->m_levelString.empty())
-                    m_fields->m_levelString = ZipUtils::decompressString(
+                if (m_fields->m_decompressedLevelString.empty()) {
+                    m_fields->m_decompressedLevelString = ZipUtils::decompressString(
                         level->m_levelString, false, 0
                     );
+                }
                 
-                async::spawn([self = WeakRef<MyLevelInfoLayer>(this), placeholder] -> arc::Future<> {
-                    auto locked = self.lock();
-                    if (!locked || locked->m_fields->m_levelString.empty())
-                        co_return;
+                async::spawn(
+                    [self]() -> arc::Future<size_t> {
+                        co_return co_await async::runtime().spawnBlocking<size_t>([self] {
+                            size_t count = 0;
+                                
+                            for (auto& object : asp::iter::split(self->m_fields->m_decompressedLevelString, ';')) {
+                                if (object.empty())
+                                    continue;
 
-                    size_t ldmObjectCount = 0;
+                                if (!object.starts_with("k") && object.find(",103,1,") == std::string::npos && !object.ends_with(",103,1"))
+                                    count++;
+                            }
 
-                    // Before I forget what that corresponds to https://boomlings.dev/resources/client/level-components/level-string
-                    // {object};{object};{object};...
-                    asp::iter::split(locked->m_fields->m_levelString, ';')
-                    .forEach([&ldmObjectCount](std::string_view object) {
-                            if (object.find(",103,1") == std::string::npos) // 103:1 = high detail object
-                                ldmObjectCount++;
-                        }
-                    );
-
-                    queueInMainThread([locked, placeholder, ldmObjectCount] {
-                        if (!locked->m_fields->m_label)
-                            return;
-
-                        std::string labelContent = locked->m_fields->m_label->getString();
+                            return count;
+                        });
+                    },
+                    [self, placeholder](size_t count) {
+                        std::string labelContent = self->m_fields->m_label->getString();
                         auto pos = labelContent.find(placeholder);
                         if (pos != std::string::npos)
                             labelContent.replace(
@@ -128,18 +158,14 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                                 placeholder.length(),
                                 fmt::format(
                                     "Objects (LDM): ~{}",
-                                    // I think the first one' a level start object
-                                    // which isn't really an object since it just
-                                    // contains data but it still has the high detail
-                                    // property set to true, so lower this by 1
-                                    Utils::FormatNumber(ldmObjectCount - 1)
+                                    Utils::FormatNumber(count)
                                 )
                             );
 
-                        locked->m_fields->m_label->setString(labelContent.c_str(), true);
-                        locked->updateLayout();
-                    });
-                });
+                        self->m_fields->m_label->setString(labelContent.c_str(), true);
+                        self->updateLayout();
+                    }
+                );
             } else {
                 labelContent << "Objects (LDM): N/A" << std::endl;
             }
@@ -179,18 +205,15 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                     // is completed
                     m_fields->m_listener.spawn(
                         req.get(fmt::format("https://api.senddb.dev/api/v1/level/{}", levelID)),
-                        [self = WeakRef<MyLevelInfoLayer>(this), placeholder, levelID](utils::web::WebResponse res) {
-                            auto locked = self.lock();
-                            if (!locked || !locked->m_fields->m_label) return;
-                            
-                            matjson::Value body = res.json().unwrapOrDefault();
+                        [self, placeholder, levelID](utils::web::WebResponse result) {                            
+                            matjson::Value body = result.json().unwrapOrDefault();
 
                             bool isSent = body.size() > 0 &&
                                 body.contains("sends") && body["sends"].size() > 0;
                             if (body.size() > 0)
                                 SentCacheManager::SaveLevel(levelID, isSent);
 
-                            std::string labelContent = locked->m_fields->m_label->getString();
+                            std::string labelContent = self->m_fields->m_label->getString();
                             size_t pos = labelContent.find(placeholder);
                             if (pos != std::string::npos)
                                 labelContent.replace(
@@ -206,8 +229,8 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                                     )
                                 );
 
-                            locked->m_fields->m_label->setString(labelContent.c_str(), true);
-                            locked->updateLayout();
+                            self->m_fields->m_label->setString(labelContent.c_str(), true);
+                            self->updateLayout();
                         }
                     );
                 }
