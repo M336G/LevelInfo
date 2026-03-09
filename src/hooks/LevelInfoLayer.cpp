@@ -196,7 +196,9 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                     std::string const placeholder = "Sent: Loading...";
                     labelContent << placeholder << std::endl;
                     
-                    auto req = utils::web::WebRequest();
+                    auto req = utils::web::WebRequest()
+                        .userAgent(std::string(Utils::GetUserAgent()));
+
                     auto levelID = static_cast<int>(level->m_levelID);
 
                     // This will call SendDB's API to know if the level was sent or

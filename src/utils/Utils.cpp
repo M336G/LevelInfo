@@ -1,6 +1,13 @@
 #include "Utils.h"
 #include "../managers/SettingsManager.h"
 
+using namespace geode::prelude;
+
+std::string_view Utils::GetUserAgent() {
+    static const auto userAgent = "LevelInfo/" + Mod::get()->getVersion().toNonVString();
+    return userAgent;
+};
+
 std::unordered_map<int, std::string_view> Utils::GameVersions = {
     { 22, "2.2" },
     { 21, "2.1" },

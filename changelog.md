@@ -1,3 +1,6 @@
+# Version 1.5.7
+- Added a custom user agent for external requests (only to SendDB currently)
+
 # Version 1.5.6
 - Fixed the game freezing when entering a level page (mostly noticeable on bigger levels) when the object count (with/without LDM) indicator(s) were enabled
 
