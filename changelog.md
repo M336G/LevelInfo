@@ -1,3 +1,6 @@
+# Version 1.5.6
+- Fixed the game freezing when entering a level page (mostly noticeable on bigger levels) when the object count (with/without LDM) indicator(s) were enabled
+
 # Version 1.5.5
 - Much more accurate object count (also applies to the Low Detail Mode one)
 

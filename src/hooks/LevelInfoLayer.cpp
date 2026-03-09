@@ -14,7 +14,6 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
         CCLabelBMFont* m_label;
 
         CCPoint const m_position = SettingsManager::Display.getPosition();
-        std::string m_decompressedLevelString;
 
         async::TaskHolder<utils::web::WebResponse> m_listener;
     };
@@ -72,102 +71,102 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                     : "N/A")
                 << std::endl;
 
-        if (SettingsManager::Toggles.objectCount) {
-            switch (level->m_objectCount) {
-                case 0:
-                case 65535: {
-                    std::string_view const placeholder = "Objects: Loading...";
-                    labelContent << placeholder << std::endl;
+        // This may be a little confusing but this was merged to avoid running the
+        // decompression twice asynchronously (as it blocks the main thread if it's synchronous)
+        if (SettingsManager::Toggles.objectCount || SettingsManager::Toggles.ldmObjectCount) {
+            static std::string_view constexpr objectCountLoadingPlaceholder = "Objects: Loading...";
+            static std::string_view constexpr ldmObjectCountLoadingPlaceholder = "Objects (LDM): Loading...";
 
-                    m_fields->m_decompressedLevelString = ZipUtils::decompressString(
-                        level->m_levelString, false, 0
-                    );
-                    
-                    async::spawn(
-                        [self]() -> arc::Future<size_t> {
-                            co_return co_await async::runtime().spawnBlocking<size_t>([self] {
-                                size_t count = 0;
+            bool objectCountIndicatorNeedsUpdate = false;
+            bool ldmObjectCountIndicatorNeedsUpdate = false;
 
-                                for (auto& object : asp::iter::split(self->m_fields->m_decompressedLevelString, ';')) {
-                                    if (!object.empty() && !object.starts_with("k"))
-                                        count++;
-                                }
+            // If the object count indicator was toggled on, return the stored object
+            // count if it's not 0 or 65,535 (hardcoded limit on RobTop's servers). If
+            // its any of these two, then set it to a loading state and count manually
+            // after some other checks. If it wasn't toggled on just don't display it
+            if (SettingsManager::Toggles.objectCount) {
+                switch (level->m_objectCount) {
+                    case 0:
+                    case 65535:
+                        labelContent << objectCountLoadingPlaceholder << std::endl;
+                        objectCountIndicatorNeedsUpdate = true;
+                        break;
+                    default:
+                        labelContent << "Objects: " << Utils::FormatNumber(level->m_objectCount)
+                            << std::endl;
+                        break;
+                }
+            }
 
-                                return count;
-                            });
-                        },
-                        [self, placeholder](size_t count) {
-                            std::string labelContent = self->m_fields->m_label->getString();
-                            auto pos = labelContent.find(placeholder);
-                            if (pos != std::string::npos)
-                                labelContent.replace(
-                                    pos,
-                                    placeholder.length(),
-                                    fmt::format(
-                                        "Objects: ~{}",
-                                        Utils::FormatNumber(count)
-                                    )
+            // If the LDM object count indicator was toggled on and there is a low
+            // detail mode on the level, set it to a loading state and count manually
+            // later on. If there's no LDM on the level then just set it to N/A and
+            // if it's not toggled on don't display it
+            if (SettingsManager::Toggles.ldmObjectCount) {
+                if (level->m_lowDetailMode) {
+                    labelContent << ldmObjectCountLoadingPlaceholder << std::endl;
+                    ldmObjectCountIndicatorNeedsUpdate = true;
+                } else {
+                    labelContent << "Objects (LDM): N/A" << std::endl;
+                }
+            }
+
+            // This is where it'll count the amount of objects for each indicator (if needed)
+            if (objectCountIndicatorNeedsUpdate || ldmObjectCountIndicatorNeedsUpdate) {
+                async::spawn(
+                    [self, levelString = level->m_levelString, objectCountIndicatorNeedsUpdate, ldmObjectCountIndicatorNeedsUpdate]() -> arc::Future<std::pair<size_t, size_t>> {
+                        co_return co_await async::runtime().spawnBlocking<std::pair<size_t, size_t>>(
+                            [levelString, objectCountIndicatorNeedsUpdate, ldmObjectCountIndicatorNeedsUpdate]() -> std::pair<size_t, size_t> {
+                                auto decompressedLevelString = ZipUtils::decompressString(
+                                    levelString, false, 0
                                 );
 
-                            self->m_fields->m_label->setString(labelContent.c_str(), true);
-                            self->updateLayout();
-                        }
-                    );
-                    break;
-                }
-                default:
-                    labelContent << "Objects: " << Utils::FormatNumber(level->m_objectCount)
-                        << std::endl;
-                    break;
-            }
-        }
+                                size_t total = 0;
+                                size_t ldm = 0;
 
-        if (SettingsManager::Toggles.ldmObjectCount) {
-            if (level->m_lowDetailMode) {
-                std::string_view const placeholder = "Objects (LDM): Loading...";
-                labelContent << placeholder << std::endl;
+                                // Before I forget what that corresponds to https://boomlings.dev/resources/client/level-components/level-string
+                                // {object};{object};{object};...
+                                for (auto& object : asp::iter::split(decompressedLevelString, ';')) {
+                                    if (object.empty() || object.starts_with("k"))
+                                        continue;
 
-                if (m_fields->m_decompressedLevelString.empty()) {
-                    m_fields->m_decompressedLevelString = ZipUtils::decompressString(
-                        level->m_levelString, false, 0
-                    );
-                }
-                
-                async::spawn(
-                    [self]() -> arc::Future<size_t> {
-                        co_return co_await async::runtime().spawnBlocking<size_t>([self] {
-                            size_t count = 0;
-                                
-                            for (auto& object : asp::iter::split(self->m_fields->m_decompressedLevelString, ';')) {
-                                if (object.empty())
-                                    continue;
+                                    if (objectCountIndicatorNeedsUpdate)
+                                        total++;
 
-                                if (!object.starts_with("k") && object.find(",103,1,") == std::string::npos && !object.ends_with(",103,1"))
-                                    count++;
+                                    // 103,1 = high detail object
+                                    if (ldmObjectCountIndicatorNeedsUpdate && object.find(",103,1,") == std::string::npos && !object.ends_with(",103,1"))
+                                        ldm++;
+                                }
+
+                                return { total, ldm };
                             }
-
-                            return count;
-                        });
+                        );
                     },
-                    [self, placeholder](size_t count) {
+                    [self, objectCountIndicatorNeedsUpdate, ldmObjectCountIndicatorNeedsUpdate](std::pair<size_t, size_t> count) {
                         std::string labelContent = self->m_fields->m_label->getString();
-                        auto pos = labelContent.find(placeholder);
-                        if (pos != std::string::npos)
-                            labelContent.replace(
-                                pos,
-                                placeholder.length(),
-                                fmt::format(
-                                    "Objects (LDM): ~{}",
-                                    Utils::FormatNumber(count)
-                                )
-                            );
+
+                        // If the object count indicator was in the loading state, update
+                        // it with our calculated object count
+                        if (objectCountIndicatorNeedsUpdate) {
+                            auto pos = labelContent.find(objectCountLoadingPlaceholder);
+                            if (pos != std::string::npos)
+                                labelContent.replace(pos, objectCountLoadingPlaceholder.length(),
+                                    fmt::format("Objects: ~{}", Utils::FormatNumber(count.first)));
+                        }
+
+                        // If the LDM object count indicator was in the loading state,
+                        //update it with our calculated object count in LDM
+                        if (ldmObjectCountIndicatorNeedsUpdate) {
+                            auto pos = labelContent.find(ldmObjectCountLoadingPlaceholder);
+                            if (pos != std::string::npos)
+                                labelContent.replace(pos, ldmObjectCountLoadingPlaceholder.length(),
+                                    fmt::format("Objects (LDM): ~{}", Utils::FormatNumber(count.second)));
+                        }
 
                         self->m_fields->m_label->setString(labelContent.c_str(), true);
                         self->updateLayout();
                     }
                 );
-            } else {
-                labelContent << "Objects (LDM): N/A" << std::endl;
             }
         }
 
