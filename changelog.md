@@ -1,3 +1,7 @@
+# Version 1.6.0
+- Added the "Enable Sent Cache", "Sent Cache Limit" & "Sent Cache Expiration" settings
+- Sent levels are now cached permanently; levels that have been cached but aren't sent can now automatically be re-checked after a certain time (being the latter setting mentioned above)
+
 # Version 1.5.7
 - Added a custom user agent for external requests (only to SendDB currently)
 
