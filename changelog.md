@@ -1,3 +1,8 @@
+# Version 1.7.0
+- The sent levels cache is now saved locally to avoid repeated requests:
+    - Sent levels will be stored permanently until they are rated/they get deleted because of the limit
+    - Not sent levels will still be stored temporarily and deleted after the configured expiration time for them to be re-checked
+
 # Version 1.6.0
 - Added the "Enable Sent Cache", "Sent Cache Limit" & "Sent Cache Expiration" settings
 - Levels that aren't sent are now cached temporarily so that they can be rechecked after a certain amount of time (being the latter setting mentioned above)

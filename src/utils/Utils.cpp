@@ -24,7 +24,7 @@ std::string_view Utils::GetGameVersion(int gameVersion) {
 };
 
 // Apparently std::format needs the formats installed so let's just do this manually
-std::string Utils::FormatNumber(int number) {
+std::string Utils::FormatNumber(size_t number) {
     if (number == 0)
         return "N/A";
 

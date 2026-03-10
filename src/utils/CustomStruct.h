@@ -53,6 +53,22 @@ namespace CustomStruct {
 
     struct SentCacheEntry {
         bool sent;
-        std::time_t timestamp;
+        time_t timestamp;
     };
 }
+
+template <>
+struct matjson::Serialize<CustomStruct::SentCacheEntry> {
+    static geode::Result<CustomStruct::SentCacheEntry> fromJson(matjson::Value const& value) {
+        GEODE_UNWRAP_INTO(bool sent, value["sent"].asBool());
+        GEODE_UNWRAP_INTO(time_t timestamp, value["timestamp"].asInt());
+
+        return geode::Ok(CustomStruct::SentCacheEntry { sent, timestamp });
+    }
+    static matjson::Value toJson(CustomStruct::SentCacheEntry const& entry) {
+        return matjson::makeObject({
+            { "sent", entry.sent },
+            { "timestamp", entry.timestamp }
+        });
+    }
+};

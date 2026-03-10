@@ -143,6 +143,9 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                         );
                     },
                     [self, objectCountIndicatorNeedsUpdate, ldmObjectCountIndicatorNeedsUpdate](std::pair<size_t, size_t> count) {
+                        if (!self->m_fields->m_label)
+                            return;
+                        
                         std::string labelContent = self->m_fields->m_label->getString();
 
                         // If the object count indicator was in the loading state, update
@@ -191,7 +194,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                     labelContent << "Sent: " << (cached.value() ? "Yes" : "No")
                         << std::endl;
                 } else {
-                    std::string const placeholder = "Sent: Loading...";
+                    static std::string_view constexpr placeholder = "Sent: Loading...";
                     labelContent << placeholder << std::endl;
                     
                     auto req = utils::web::WebRequest()
@@ -204,7 +207,10 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                     // is completed
                     m_fields->m_listener.spawn(
                         req.get(fmt::format("https://api.senddb.dev/api/v1/level/{}", levelID)),
-                        [self, placeholder, levelID](utils::web::WebResponse result) {                            
+                        [self, levelID](utils::web::WebResponse result) {
+                            if (!self->m_fields->m_label)
+                                return;
+                            
                             matjson::Value body = result.json().unwrapOrDefault();
 
                             bool isSent = body.size() > 0 &&
@@ -234,6 +240,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                     );
                 }
             } else {
+                SentCacheManager::DeleteLevel(level->m_levelID);
                 labelContent << "Sent: Rated" << std::endl;
             }
         }

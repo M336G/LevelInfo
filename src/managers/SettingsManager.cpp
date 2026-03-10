@@ -39,7 +39,7 @@ CustomStruct::OtherSettings SettingsManager::Other = {
     Mod::get()->getSettingValue<int>("sent-cache-expiration") * 60
 };
 
-// There is DEFINETELY a better way to do this but if it works it works
+// There is DEFINITELY a better way to do this but if it works it works
 $execute {
     // Display Settings
     listenForSettingChanges<int>("text-width-offset", [](int offset) {
@@ -85,7 +85,7 @@ $execute {
     });
     listenForSettingChanges<bool>("show-sent", [](bool enabled) {
         if (!enabled)
-            SentCacheManager::Clear();
+            SentCacheManager::ClearCache();
 
         SettingsManager::Toggles.sent = enabled;
     });
@@ -120,12 +120,12 @@ $execute {
     // Other Settings
     listenForSettingChanges<bool>("enable-sent-cache", [](bool enabled) {
         if (!enabled)
-            SentCacheManager::Clear();
+            SentCacheManager::ClearCache();
 
         SettingsManager::Other.enableSentCache = enabled;
     });
     listenForSettingChanges<int>("sent-cache-limit", [](int limit) {
-        SentCacheManager::Clear(limit);
+        SentCacheManager::ClearCache(limit);
 
         SettingsManager::Other.maxSentCacheLimit = limit;
     });

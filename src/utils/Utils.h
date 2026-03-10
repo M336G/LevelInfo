@@ -9,6 +9,6 @@ public:
 
     static std::string_view GetGameVersion(int gameVersion);
 
-    static std::string FormatNumber(int number);
+    static std::string FormatNumber(size_t number);
     static std::string FormatTime(std::chrono::seconds seconds);
 };
