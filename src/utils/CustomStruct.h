@@ -44,4 +44,9 @@ namespace CustomStruct {
                 editorTime || editorTimeCopies || attempts || jumps || clicks || attemptTime;
         }
     };
+
+    struct SentCacheEntry {
+        bool sent;
+        std::time_t timestamp;
+    };
 }
