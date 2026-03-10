@@ -187,9 +187,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
         
         if (SettingsManager::Toggles.sent) {
             if (level->m_stars == 0) {
-                auto cached = SentCacheManager::GetLevel(level->m_levelID);
-
-                if (cached) {
+                if (auto cached = SettingsManager::Other.enableSentCache ? SentCacheManager::GetLevel(level->m_levelID) : std::nullopt) {
                     labelContent << "Sent: " << (cached.value() ? "Yes" : "No")
                         << std::endl;
                 } else {
@@ -211,7 +209,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
 
                             bool isSent = body.size() > 0 &&
                                 body.contains("sends") && body["sends"].size() > 0;
-                            if (body.size() > 0)
+                            if (SettingsManager::Other.enableSentCache && body.size() > 0)
                                 SentCacheManager::SaveLevel(levelID, isSent);
 
                             std::string labelContent = self->m_fields->m_label->getString();

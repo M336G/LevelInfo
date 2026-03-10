@@ -191,6 +191,42 @@
       "description": "Show the best time you did on a level",
       "type": "bool",
       "default": true
+    },
+
+    "other-settings": {
+      "type": "title",
+      "name": "Other Settings"
+    },
+    "enable-sent-cache": {
+      "name": "Enable Sent Cache",
+      "description": "Cache the sent state of levels to avoid repeated requests to SendDB per session",
+      "type": "bool",
+      "default": true,
+      "enable-if": "show-sent"
+    },
+    "sent-cache-limit": {
+      "name": "Sent Cache Limit",
+      "description": "Maximum number of levels stored in the sent cache at once (per session)",
+      "type": "int",
+      "default": 1000,
+      "min": 1,
+      "max": 10000,
+      "control": {
+        "slider": true
+      },
+      "enable-if": "show-sent && enable-sent-cache"
+    },
+    "sent-cache-expiration": {
+      "name": "Sent Cache Expiration",
+      "description": "Set how long a level's not sent state is cached before being re-checked (in minutes)",
+      "type": "int",
+      "default": 5,
+      "min": 1,
+      "max": 1440,
+      "control": {
+        "slider": true
+      },
+      "enable-if": "show-sent && enable-sent-cache"
     }
   }
 }

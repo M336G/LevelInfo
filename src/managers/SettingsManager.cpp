@@ -33,6 +33,12 @@ CustomStruct::ToggleSettings SettingsManager::Toggles = {
     Mod::get()->getSettingValue<bool>("show-attempt-time")
 };
 
+CustomStruct::OtherSettings SettingsManager::Other = {
+    Mod::get()->getSettingValue<bool>("enable-sent-cache"),
+    Mod::get()->getSettingValue<int>("sent-cache-limit"),
+    Mod::get()->getSettingValue<int>("sent-cache-expiration") * 60
+};
+
 // There is DEFINETELY a better way to do this but if it works it works
 $execute {
     // Display Settings
@@ -109,5 +115,21 @@ $execute {
     });
     listenForSettingChanges<bool>("show-attempt-time", [](bool enabled) {
         SettingsManager::Toggles.attemptTime = enabled;
+    });
+
+    // Other Settings
+    listenForSettingChanges<bool>("enable-sent-cache", [](bool enabled) {
+        if (!enabled)
+            SentCacheManager::Clear();
+
+        SettingsManager::Other.enableSentCache = enabled;
+    });
+    listenForSettingChanges<int>("sent-cache-limit", [](int limit) {
+        SentCacheManager::Clear(limit);
+
+        SettingsManager::Other.maxSentCacheLimit = limit;
+    });
+    listenForSettingChanges<int>("sent-cache-expiration", [](int expiration) {
+        SettingsManager::Other.maxSentCacheExpiration = expiration * 60;
     });
 };

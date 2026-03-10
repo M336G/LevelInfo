@@ -8,5 +8,5 @@ private:
 public:
     static void SaveLevel(int levelID, bool sent);
     static std::optional<bool> GetLevel(int levelID);
-    static void Clear();
+    static void Clear(int newLimit = 0);
 };

@@ -1,9 +1,10 @@
 #include "SentCacheManager.h"
+#include "SettingsManager.h"
 
 std::unordered_map<int, CustomStruct::SentCacheEntry> SentCacheManager::Cache = {};
 
 void SentCacheManager::SaveLevel(int levelID, bool sent) {
-    if (SentCacheManager::Cache.size() >= 1000)
+    if (SentCacheManager::Cache.size() >= SettingsManager::Other.maxSentCacheLimit)
         SentCacheManager::Cache.erase(SentCacheManager::Cache.begin());
 
     SentCacheManager::Cache[levelID] = {
@@ -21,7 +22,7 @@ std::optional<bool> SentCacheManager::GetLevel(int levelID) {
 
         // If the level isn't sent, check if it's past the expiration to check if it
         // was sent again
-        if (entry.timestamp + 5 * 60 > std::time(nullptr))
+        if (entry.timestamp + SettingsManager::Other.maxSentCacheExpiration > std::time(nullptr))
             return false;
 
         // If it's past the expiration delete it from the cache as said before
@@ -33,6 +34,13 @@ std::optional<bool> SentCacheManager::GetLevel(int levelID) {
     return std::nullopt;
 }
 
-void SentCacheManager::Clear() {
-    SentCacheManager::Cache.clear();
+void SentCacheManager::Clear(int newLimit) {
+    if (newLimit > 0 && SentCacheManager::Cache.size() > newLimit) {
+        SentCacheManager::Cache.erase(
+            SentCacheManager::Cache.begin(),
+            std::next(SentCacheManager::Cache.begin(), SentCacheManager::Cache.size() - newLimit)
+        );
+    } else {
+        SentCacheManager::Cache.clear();
+    }
 };

@@ -45,6 +45,12 @@ namespace CustomStruct {
         }
     };
 
+    struct OtherSettings {
+        bool enableSentCache;
+        int maxSentCacheLimit;
+        int maxSentCacheExpiration;
+    };
+
     struct SentCacheEntry {
         bool sent;
         std::time_t timestamp;
