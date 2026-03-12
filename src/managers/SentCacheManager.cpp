@@ -3,10 +3,14 @@
 
 using namespace geode::prelude;
 
+std::shared_mutex SentCacheManager::Mutex;
 std::unordered_map<int, CustomStruct::SentCacheEntry> SentCacheManager::Cache = {};
+
 std::filesystem::path SentCacheManager::CachePath = Mod::get()->getSaveDir() / "sent_cache.json";
 
 void SentCacheManager::SaveCache() {
+    std::shared_lock lock(Mutex);
+
     matjson::Value cache = {};
 
     for (auto& entry : SentCacheManager::Cache)
@@ -20,11 +24,11 @@ void SentCacheManager::SaveCache() {
         log::error("Could not save sent levels cache: {}", result.unwrapErr());
         return;
     }
-    
-    log::info("Saved {} level(s) from the sent levels cache", cache.size());
 };
 
 void SentCacheManager::LoadCache() {
+    std::unique_lock lock(Mutex);
+
     if (!std::filesystem::exists(SentCacheManager::CachePath))
         return;
 
@@ -37,7 +41,7 @@ void SentCacheManager::LoadCache() {
     for (auto& [key, value] : result.unwrap())
         SentCacheManager::Cache[utils::numFromString<int>(key).unwrap()] = value.as<CustomStruct::SentCacheEntry>().unwrap();
 
-    log::info("Loaded {} level(s) to the sent levels cache", SentCacheManager::Cache.size());
+    log::info("Loaded {} locally saved level(s) in the sent levels cache", SentCacheManager::Cache.size());
 };
 
 void SentCacheManager::DeleteCache() {
@@ -46,6 +50,8 @@ void SentCacheManager::DeleteCache() {
 };
 
 void SentCacheManager::ClearCache(int newLimit) {
+    std::unique_lock lock(Mutex);
+
     if (newLimit > 0 && SentCacheManager::Cache.size() > newLimit) {
         SentCacheManager::Cache.erase(
             SentCacheManager::Cache.begin(),
@@ -57,16 +63,27 @@ void SentCacheManager::ClearCache(int newLimit) {
 };
 
 void SentCacheManager::SaveLevel(int levelID, bool sent) {
-    if (SentCacheManager::Cache.size() >= SettingsManager::Other.maxSentCacheLimit)
-        SentCacheManager::Cache.erase(SentCacheManager::Cache.begin());
+    {
+        std::unique_lock lock(Mutex);
 
-    SentCacheManager::Cache[levelID] = {
-        sent,
-        sent ? 0 : std::time(nullptr) // Timestamp will always be 0 for sent levels as to not waste memory (there's no need to check their expiration later on)
-    };
+        if (SentCacheManager::Cache.size() >= SettingsManager::Other.maxSentCacheLimit)
+            SentCacheManager::Cache.erase(SentCacheManager::Cache.begin());
+
+        SentCacheManager::Cache[levelID] = {
+            sent,
+            sent ? 0 : std::time(nullptr) // Timestamp will always be 0 for sent levels as to not waste memory (there's no need to check their expiration later on)
+        };
+    }
+    
+    // Save all levels in the sent cache
+    async::runtime().spawnBlocking<void>([] {
+        SentCacheManager::SaveCache();
+    });
 };
 
 std::optional<bool> SentCacheManager::GetLevel(int levelID) {
+    std::unique_lock lock(Mutex);
+    
     if (SentCacheManager::Cache.contains(levelID)) {
         auto& entry = SentCacheManager::Cache[levelID];
 
@@ -88,16 +105,15 @@ std::optional<bool> SentCacheManager::GetLevel(int levelID) {
 };
 
 void SentCacheManager::DeleteLevel(int levelID) {
+    std::unique_lock lock(Mutex);
+
     if (SentCacheManager::Cache.contains(levelID))
         SentCacheManager::Cache.erase(levelID);
 };
 
+// Load the cache on startup
 $execute {
-    // Load the cache on startup
-    SentCacheManager::LoadCache();
-
-    // And save it whenever it detects that the game is closing
-    GameEvent(GameEventType::Exiting).listen([] {
-        SentCacheManager::SaveCache();
-    }).leak();
+    async::runtime().spawnBlocking<void>([] {
+        SentCacheManager::LoadCache();
+    });
 };

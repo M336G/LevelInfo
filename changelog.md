@@ -1,3 +1,9 @@
+# Version 1.7.1
+- Fixed the local sent levels cache not working on mobile
+- Made the fix for duplicate labels work better
+- Made operations related to the sent levels cache safer to prevent potential crashes
+- Made the loading of the sent levels cache on startup asynchronous as to not freeze/block the game
+
 # Version 1.7.0
 - The sent levels cache is now saved locally to avoid repeated requests:
     - Sent levels will be stored permanently until they are rated/they get deleted because of the limit

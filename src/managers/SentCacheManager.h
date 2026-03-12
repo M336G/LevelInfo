@@ -1,9 +1,12 @@
 #pragma once
 #include "../utils/CustomStruct.h"
+#include <shared_mutex>
 
 class SentCacheManager {
 private:
+    static std::shared_mutex Mutex;
     static std::unordered_map<int, CustomStruct::SentCacheEntry> Cache;
+
     static std::filesystem::path CachePath;
 
 public:
