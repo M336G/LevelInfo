@@ -1,6 +1,5 @@
 #include "SentCacheManager.h"
 #include "SettingsManager.h"
-#include <asp/iter.hpp>
 
 using namespace geode::prelude;
 
@@ -94,5 +93,11 @@ void SentCacheManager::DeleteLevel(int levelID) {
 };
 
 $execute {
+    // Load the cache on startup
     SentCacheManager::LoadCache();
+
+    // And save it whenever it detects that the game is closing
+    GameEvent(GameEventType::Exiting).listen([] {
+        SentCacheManager::SaveCache();
+    }).leak();
 };

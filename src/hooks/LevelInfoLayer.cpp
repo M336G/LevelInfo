@@ -45,17 +45,12 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
         if (SettingsManager::Display.size > 0 && SettingsManager::Toggles.anyEnabled())
             showLevelInfo(level);
     };
-    
-    // If the level is updated, avoid displaying the label twice by deleting the first
-    // one and letting it create a new updated one
-    void levelUpdateFinished(GJGameLevel* level, UpdateResponse response) {
-        if (auto label = static_cast<CCLabelBMFont*>(this->getChildByIDRecursive("level-info-label"_spr)))
-            label->removeFromParentAndCleanup(true);
-
-        return LevelInfoLayer::levelUpdateFinished(level, response);
-    };
 
 	void showLevelInfo(GJGameLevel* level) {
+        // Remove any duplicate first (caused by level updates, ...)
+        if (auto* label = static_cast<CCLabelBMFont*>(this->getChildByIDRecursive("level-info-label"_spr)))
+            label->removeFromParentAndCleanup(true);
+
         Ref<MyLevelInfoLayer> self = this;
         std::stringstream labelContent;
 
