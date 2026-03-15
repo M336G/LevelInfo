@@ -3,7 +3,7 @@
 
 using namespace geode::prelude;
 
-std::string_view Utils::GetUserAgent() {
+std::string const& Utils::GetUserAgent() {
     static const auto userAgent = "LevelInfo/" + Mod::get()->getVersion().toNonVString();
     return userAgent;
 };

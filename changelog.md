@@ -1,3 +1,7 @@
+# Version 1.8.0
+- Added a new API for faster sent checks
+    - Falls back to the original SendDB API if the cache request fails or is unavailable
+
 # Version 1.7.1
 - Fixed the local sent levels cache not working on mobile
 - Made the fix for duplicate labels work better

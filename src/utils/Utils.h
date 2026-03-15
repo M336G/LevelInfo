@@ -5,7 +5,7 @@ private:
     static std::unordered_map<int, std::string_view> GameVersions;
 
 public:
-    static std::string_view GetUserAgent();
+    static std::string const& GetUserAgent();
 
     static std::string_view GetGameVersion(int gameVersion);
 
