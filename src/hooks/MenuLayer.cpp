@@ -11,7 +11,7 @@ class $modify(MenuLayer) {
 
         if (SettingsManager::Toggles.sent &&
             Utils::IsGDPS() &&
-            SettingsManager::Other.sendDbApiUrl == "https://api.senddb.dev/api/v1/level/" &&
+            SettingsManager::Other.customSendsEndpoint.empty() &&
             SettingsManager::Other.showGDPSWarning &&
             !SettingsManager::ShowedGDPSWarning
         ) {
