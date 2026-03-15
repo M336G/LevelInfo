@@ -49,6 +49,8 @@ namespace CustomStruct {
         bool enableSentCache;
         int maxSentCacheLimit;
         int maxSentCacheExpiration;
+        std::string sendDbApiUrl;
+        bool showGDPSWarning;
     };
 
     struct SentCacheEntry {

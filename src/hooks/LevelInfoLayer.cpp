@@ -181,7 +181,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
             labelContent << "Has LDM: " << (level->m_lowDetailMode ? "Yes" : "No")
                 << std::endl;
         
-        if (SettingsManager::Toggles.sent) {
+        if (SettingsManager::Toggles.sent && (!Utils::IsGDPS() || SettingsManager::Other.sendDbApiUrl != "https://api.senddb.dev/api/v1/level/")) {
             if (level->m_stars == 0) {
                 if (auto cached = SettingsManager::Other.enableSentCache ? SentCacheManager::GetLevel(level->m_levelID) : std::nullopt) {
                     labelContent << "Sent: " << (cached.value() ? "Yes" : "No")
@@ -193,46 +193,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                     auto levelID = static_cast<int>(level->m_levelID);
                     
                     async::spawn(
-                        [levelID]() -> arc::Future<Result<bool, void>> {
-                            // First try requesting to my own cache API specifically for
-                            // the sent state
-                            auto req = co_await utils::web::WebRequest()
-                                .userAgent(Utils::GetUserAgent())
-                                .timeout(std::chrono::seconds(3))
-                                .get(fmt::format("https://sdbc.m336.dev/level/{}", levelID));
-                            auto body = req.json().unwrapOrDefault();
-                            auto error = body["error"].asString().unwrapOrDefault();
-
-                            // If that doesn't work, fallback to the original SendDB API
-                            if (!req.ok() || body.size() <= 0 || error.size() > 0) {
-                                log::warn(
-                                    "Failed requesting to the cache API ({}), fallback to the original SendDB API",
-                                    error.size() > 0 ? error : req.errorMessage()
-                                );
-
-                                req = co_await utils::web::WebRequest()
-                                    .userAgent(Utils::GetUserAgent())
-                                    .timeout(std::chrono::seconds(3))
-                                    .get(fmt::format("https://api.senddb.dev/api/v1/level/{}", levelID));
-                                body = req.json().unwrapOrDefault();
-                                error = req.errorMessage();
-
-                                // If that still doesn't work, don't go further
-                                if (!req.ok() || body.size() <= 0) {
-                                    log::error(
-                                        "Failed requesting to the SendDB API: {}",
-                                        error.size() > 0 ? error : req.string().unwrap()
-                                    );
-                                    co_return Err();
-                                }
-
-                                // For the SendDB API, just check if the sends object is more than 0
-                                co_return Ok(body["sends"].size() > 0 ? true : false);
-                            }
-
-                            // For the cache, it's directly indicated in the sent boolean
-                            co_return Ok(body["sent"].asBool().unwrap());
-                        },
+                        Utils::CheckIfLevelSent(levelID),
                         [self, levelID](Result<bool, void> result) {
                             if (!self->m_fields->m_label)
                                 return;

@@ -132,4 +132,12 @@ $execute {
     listenForSettingChanges<int>("sent-cache-expiration", [](int expiration) {
         SettingsManager::Other.maxSentCacheExpiration = expiration * 60;
     });
+    listenForSettingChanges<std::string>("senddb-api-url", [](std::string url) {
+        SettingsManager::Other.sendDbApiUrl = url;
+    });
+    listenForSettingChanges<bool>("disable-gdps-warning", [](bool enabled) {
+        SettingsManager::Other.showGDPSWarning = !enabled;
+    });
 };
+
+bool SettingsManager::ShowedGDPSWarning = false;
