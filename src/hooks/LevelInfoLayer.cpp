@@ -181,7 +181,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
             labelContent << "Has LDM: " << (level->m_lowDetailMode ? "Yes" : "No")
                 << std::endl;
         
-        if (SettingsManager::Toggles.sent && (!Utils::IsGDPS() || SettingsManager::Other.sendDbApiUrl != "https://api.senddb.dev/api/v1/level/")) {
+        if (SettingsManager::Toggles.sent && (!Utils::IsGDPS() || !SettingsManager::Other.customSendsEndpoint.empty()) {
             if (level->m_stars == 0) {
                 if (auto cached = SettingsManager::Other.enableSentCache ? SentCacheManager::GetLevel(level->m_levelID) : std::nullopt) {
                     labelContent << "Sent: " << (cached.value() ? "Yes" : "No")

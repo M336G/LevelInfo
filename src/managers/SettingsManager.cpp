@@ -36,7 +36,9 @@ CustomStruct::ToggleSettings SettingsManager::Toggles = {
 CustomStruct::OtherSettings SettingsManager::Other = {
     Mod::get()->getSettingValue<bool>("enable-sent-cache"),
     Mod::get()->getSettingValue<int>("sent-cache-limit"),
-    Mod::get()->getSettingValue<int>("sent-cache-expiration") * 60
+    Mod::get()->getSettingValue<int>("sent-cache-expiration") * 60,
+    Mod::get()->getSettingValue<std::string>("custom-sends-endpoint"),
+    !Mod::get()->getSettingValue<bool>("disable-gdps-warning")
 };
 
 // There is DEFINITELY a better way to do this but if it works it works
@@ -132,8 +134,8 @@ $execute {
     listenForSettingChanges<int>("sent-cache-expiration", [](int expiration) {
         SettingsManager::Other.maxSentCacheExpiration = expiration * 60;
     });
-    listenForSettingChanges<std::string>("senddb-api-url", [](std::string url) {
-        SettingsManager::Other.sendDbApiUrl = url;
+    listenForSettingChanges<std::string>("custom-sends-endpoint", [](std::string url) {
+        SettingsManager::Other.customSendsEndpoint = url;
     });
     listenForSettingChanges<bool>("disable-gdps-warning", [](bool enabled) {
         SettingsManager::Other.showGDPSWarning = !enabled;

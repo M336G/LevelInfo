@@ -49,7 +49,7 @@ namespace CustomStruct {
         bool enableSentCache;
         int maxSentCacheLimit;
         int maxSentCacheExpiration;
-        std::string sendDbApiUrl;
+        std::string customSendsEndpoint;
         bool showGDPSWarning;
     };
 

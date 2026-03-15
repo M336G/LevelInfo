@@ -228,12 +228,12 @@
       },
       "enable-if": "show-sent && enable-sent-cache"
     },
-    "senddb-api-url": {
-      "name": "SendDB API URL",
+    "custom-sends-endpoint": {
+      "name": "Custom Sends Endpoint",
       "description": "Only modify this if you're on a GDPS and host a custom SendDB instance (or something with a similar API response)",
       "type": "string",
       "filter": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:/.-_%?&=[]@",
-      "default": "https://api.senddb.dev/api/v1/level/"
+      "default": ""
     },
     "disable-gdps-warning": {
       "name": "Disable GDPS Warning",

@@ -8,7 +8,7 @@ std::string const& Utils::RequestUserAgent = "LevelInfo/" + Mod::get()->getVersi
 std::chrono::seconds const Utils::RequestTimeout = std::chrono::seconds(3);
 
 arc::Future<Result<bool, void>> Utils::CheckIfLevelSent(int levelID) {
-    if (!Utils::IsGDPS() && SettingsManager::Other.sendDbApiUrl == "https://api.senddb.dev/api/v1/level/") {
+    if (!Utils::IsGDPS() && SettingsManager::Other.customSendsEndpoint.empty()) {
         auto req = co_await utils::web::WebRequest()
             .userAgent(Utils::RequestUserAgent)
             .timeout(Utils::RequestTimeout)
@@ -17,7 +17,7 @@ arc::Future<Result<bool, void>> Utils::CheckIfLevelSent(int levelID) {
         auto body = req.json().unwrapOrDefault();
         auto error = body["error"].asString().unwrapOrDefault();
 
-        if (req.ok() && body.size() > 0 && error.size() <= 0)
+        if (req.ok() && body.size() > 0 && error.empty())
             co_return Ok(body["sent"].asBool().unwrap());
         else
             log::warn(
@@ -29,7 +29,10 @@ arc::Future<Result<bool, void>> Utils::CheckIfLevelSent(int levelID) {
     auto req = co_await utils::web::WebRequest()
         .userAgent(Utils::RequestUserAgent)
         .timeout(Utils::RequestTimeout)
-        .get(SettingsManager::Other.sendDbApiUrl + std::to_string(levelID));
+        .get(SettingsManager::Other.customSendsEndpoint.empty()
+            ? "https://api.senddb.dev/api/v1/level/" 
+            : SettingsManager::Other.customSendsEndpoint
+            + std::to_string(levelID));
 
     auto body = req.json().unwrapOrDefault();
 
