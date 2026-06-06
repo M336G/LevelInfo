@@ -54,3 +54,33 @@ std::string Utils::FormatTime(std::chrono::seconds seconds) {
     
     return string;
 };
+
+bool Utils::ObjectHasKeyValue(std::string_view object, std::string_view key, std::string_view value) {
+    std::string needle = std::string(key) + "," + std::string(value);
+
+    return object == needle
+        || object.starts_with(needle + ",")
+        || object.find("," + needle + ",") != std::string::npos
+        || object.ends_with("," + needle);
+};
+
+// This could have been made more simply but I wanted to be extra sure it doesn't accidentally
+// catch something in a Base64 string
+bool Utils::ObjectIsLevelSettings(std::string_view object) {
+    if (object.starts_with("k"))
+        return true;
+
+    bool isKey = true;
+    for (auto token : asp::iter::split(object, ',')) {
+        if (isKey) {
+            for (char character : token) {
+                if (character < '0' || character > '9')
+                    return true;
+            }
+        }
+
+        isKey = !isKey;
+    }
+
+    return false;
+};
