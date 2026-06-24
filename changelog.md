@@ -1,3 +1,8 @@
+# Version 1.8.1
+- Fixed the object count to be fully accurate (hopefully)
+- Fixed the LDM object count displaying the number of removed objects instead of the number of objects remaining with LDM enabled
+- Added a percentage showing how many objects are removed when LDM is enabled
+
 # Version 1.8.0
 - Added a new API for faster sent checks
     - Falls back to the original SendDB API if the cache request fails or is unavailable

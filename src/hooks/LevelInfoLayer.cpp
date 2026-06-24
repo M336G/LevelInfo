@@ -120,15 +120,15 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                                 // Before I forget what that corresponds to https://boomlings.dev/resources/client/level-components/level-string
                                 // {object};{object};{object};...
                                 for (auto& object : asp::iter::split(decompressedLevelString, ';')) {
-                                    if (object.empty() || object.starts_with("k"))
+                                    if (object.empty() || Utils::ObjectIsLevelSettings(object))
                                         continue;
 
-                                    if (objectCountIndicatorNeedsUpdate)
-                                        total++;
+                                    const bool isObjectBluePortal = Utils::ObjectHasKeyValue(object, "1", "747");
 
-                                    // 103,1 = high detail object
-                                    if (ldmObjectCountIndicatorNeedsUpdate && object.find(",103,1,") == std::string::npos && !object.ends_with(",103,1"))
-                                        ldm++;
+                                    if (Utils::ObjectHasKeyValue(object, "103", "1"))
+                                        ldm += isObjectBluePortal ? 2 : 1;
+
+                                    total += isObjectBluePortal ? 2 : 1;
                                 }
 
                                 return { total, ldm };
@@ -147,16 +147,24 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                             auto pos = labelContent.find(objectCountLoadingPlaceholder);
                             if (pos != std::string::npos)
                                 labelContent.replace(pos, objectCountLoadingPlaceholder.length(),
-                                    fmt::format("Objects: ~{}", Utils::FormatNumber(count.first)));
+                                    fmt::format("Objects: {}", Utils::FormatNumber(count.first)));
                         }
 
                         // If the LDM object count indicator was in the loading state,
-                        //update it with our calculated object count in LDM
+                        // update it with our calculated object count in LDM
                         if (ldmObjectCountIndicatorNeedsUpdate) {
                             auto pos = labelContent.find(ldmObjectCountLoadingPlaceholder);
-                            if (pos != std::string::npos)
-                                labelContent.replace(pos, ldmObjectCountLoadingPlaceholder.length(),
-                                    fmt::format("Objects (LDM): ~{}", Utils::FormatNumber(count.second)));
+                            if (pos != std::string::npos) {
+                                labelContent.replace(
+                                    pos,
+                                    ldmObjectCountLoadingPlaceholder.length(),
+                                    fmt::format(
+                                        "Obj. (LDM): {} (-{}%)",
+                                        Utils::FormatNumber(count.first - count.second),
+                                        static_cast<int>(std::round(100.f * count.second / count.first))
+                                    )
+                                );
+                            }
                         }
 
                         self->m_fields->m_label->setString(labelContent.c_str(), true);

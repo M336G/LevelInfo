@@ -16,4 +16,7 @@ public:
 
     static std::string FormatNumber(size_t number);
     static std::string FormatTime(std::chrono::seconds seconds);
+
+    static bool ObjectHasKeyValue(std::string_view object, std::string_view key, std::string_view value);
+    static bool ObjectIsLevelSettings(std::string_view object);
 };
