@@ -8,7 +8,7 @@ std::string const& Utils::RequestUserAgent = "LevelInfo/" + Mod::get()->getVersi
 std::chrono::seconds const Utils::RequestTimeout = std::chrono::seconds(3);
 
 arc::Future<Result<bool, void>> Utils::CheckIfLevelSent(int levelID) {
-    if (!Utils::IsGDPS() && SettingsManager::Other.customSendsEndpoint.empty()) {
+    if (!Utils::IsOnGdps() && SettingsManager::Other.customSendsEndpoint.empty()) {
         auto req = co_await utils::web::WebRequest()
             .userAgent(Utils::RequestUserAgent)
             .timeout(Utils::RequestTimeout)
@@ -58,48 +58,39 @@ std::unordered_map<int, std::string_view> Utils::GameVersions = {
     { 10, "1.7" }
 };
 
-// Taken from https://github.com/Cvolton/betterinfo-geode/blob/0110f5e273209b7ef0bff1619b88bc74a69efc6c/src/utils/ServerUtils.cpp#L19-L57
-std::string const Utils::GetBaseURL() {
-    if (Loader::get()->isModLoaded("km7dev.server_api")) {
-        auto url = ServerAPIEvents::getCurrentServer().url;
-        if (!url.empty() && url != "NONE_REGISTERED") {
-            while (url.ends_with("/"))
-                url.pop_back();
-            return url;
+// https://github.com/hiimjasmine00/jasmine-tools/blob/6b6a3b00536a341791eb0de33e53b63c49baa8df/src/jasmine.cpp#L39-L66
+bool Utils::IsOnGdps() {
+    static const bool isOnGdps = []() -> bool {
+        std::string url;
+
+        if (Loader::get()->isModLoaded("km7dev.server_api")) {
+            url = ServerAPIEvents::getCurrentServer().url;
+            if (!url.empty() && url!= "NONE_REGISTERED") {
+                while (url.ends_with("/")) url.pop_back();
+            } else {
+                url = "";
+            }
         }
-    }
 
-    // The addresses are pointing to "https://www.boomlings.com/database/getGJLevels21.php"
-    // in the main game executable
+        if (url.empty()) {
+            static_assert(GEODE_COMP_GD_VERSION == 22081, "Incompatible GD version for GDPS check");
+            url = std::string(
+                reinterpret_cast<const char *>(base::get() +
+                    GEODE_WINDOWS(0x558b70)
+                    GEODE_ARM_MAC(0x77d709)
+                    GEODE_INTEL_MAC(0x868df0)
+                    GEODE_ANDROID64(0xeccf90)
+                    GEODE_ANDROID32(0x96c0db)
+                    GEODE_IOS(0x6b8cc2)
+                ), 34
+            );
+        }
 
-    // Prevent compiling if the game version isn't 2.2081 (since these adresses are
-    // specific to the binary they won't work if the version's different)
-    static_assert(GEODE_COMP_GD_VERSION == 22081, "Unsupported GD version");
+        return url.find("://www.boomlings.com/database") == std::string::npos;
+    }();
 
-    uintptr_t offset;
-    #ifdef GEODE_IS_WINDOWS
-        offset = 0x558b70;
-    #elif defined(GEODE_IS_ARM_MAC)
-        offset = 0x77d709;
-    #elif defined(GEODE_IS_INTEL_MAC)
-        offset = 0x868df0;
-    #elif defined(GEODE_IS_ANDROID64)
-        offset = 0xECCF90;
-    #elif defined(GEODE_IS_ANDROID32)
-        offset = 0x96C0DB;
-    #elif defined(GEODE_IS_IOS)
-        offset = 0x6b8cc2;
-    #else
-        static_assert(false, "Unsupported platform");
-    #endif
-
-    std::string ret = (char*)(base::get() + offset);
-    return ret.size() > 34 ? ret.substr(0, 34) : ret;
-};
-
-bool Utils::IsGDPS() {
-    return Utils::GetBaseURL() != "https://www.boomlings.com/database";
-};
+    return isOnGdps;
+}
 
 std::string_view Utils::GetGameVersion(int gameVersion) {
     if (Utils::GameVersions.count(gameVersion))

@@ -10,7 +10,7 @@ class $modify(MenuLayer) {
             return false;
 
         if (SettingsManager::Toggles.sent &&
-            Utils::IsGDPS() &&
+            Utils::IsOnGdps() &&
             SettingsManager::Other.customSendsEndpoint.empty() &&
             SettingsManager::Other.showGDPSWarning &&
             !SettingsManager::ShowedGDPSWarning
@@ -18,12 +18,12 @@ class $modify(MenuLayer) {
             Notification::create(
                 "Level Info's sent indicator was disabled (you're on a GDPS)",
                 NotificationIcon::Warning,
-                1.5f
+                2.f
             )->show();
             Notification::create(
-                "Change the sent indicator URL in Level Info's settings",
+                "Change the sent indicator URL/disable this warning in its settings",
                 NotificationIcon::Warning,
-                1.5f
+                2.f
             )->show();
 
             SettingsManager::ShowedGDPSWarning = true;
