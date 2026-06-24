@@ -1,3 +1,8 @@
+# Version 1.8.2
+- Added a check to automatically disable the sent indicator on GDPSs (as they are incompatible with the original SendDB API)
+- Added a toggle to disable the warning about using the mod on a GDPS every time the game starts
+- Added a setting to change the URL for the sent indicator to keep it working on GDPSs
+
 # Version 1.8.1
 - Fixed the object count to be fully accurate (hopefully)
 - Fixed the LDM object count displaying the number of removed objects instead of the number of objects remaining with LDM enabled
