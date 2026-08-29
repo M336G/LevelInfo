@@ -49,15 +49,6 @@ arc::Future<Result<bool, void>> Utils::CheckIfLevelSent(int levelID) {
     co_return Ok(body["sends"].size() > 0 ? true : false);
 };
 
-std::unordered_map<int, std::string_view> Utils::GameVersions = {
-    { 22, "2.2" },
-    { 21, "2.1" },
-    { 20, "2.0" },
-    { 19, "1.9" },
-    { 18, "1.8" },
-    { 10, "1.7" }
-};
-
 // https://github.com/hiimjasmine00/jasmine-tools/blob/6b6a3b00536a341791eb0de33e53b63c49baa8df/src/jasmine.cpp#L39-L66
 bool Utils::IsOnGdps() {
     static const bool isOnGdps = []() -> bool {
@@ -92,11 +83,22 @@ bool Utils::IsOnGdps() {
     return isOnGdps;
 }
 
-std::string_view Utils::GetGameVersion(int gameVersion) {
-    if (Utils::GameVersions.count(gameVersion))
-        return Utils::GameVersions.at(gameVersion);
-    return "Pre-1.7";
-};
+std::string Utils::GetGameVersion(int gameVersion) {
+    // https://wyliemaster.github.io/gddocs/#/resources/server/level
+    // "Versions 1.0 to 1.6 use version numbers 1 to 7 respectively."
+    if (gameVersion >= 1 && gameVersion <= 7)
+        return fmt::format("1.{}", gameVersion - 1);
+
+    // "Version 10 is 1.7."
+    if (gameVersion == 10)
+        return "1.7";
+
+    // "Otherwise, divide the version number by ten to get the correct number."
+    if (gameVersion > 10)
+        return fmt::format("{}.{}", gameVersion / 10, gameVersion % 10);
+
+    return "N/A";
+}
 
 // Apparently std::format needs the formats installed so let's just do this manually
 std::string Utils::FormatNumber(size_t number) {

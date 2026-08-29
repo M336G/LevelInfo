@@ -5,12 +5,10 @@ private:
     static std::string const& RequestUserAgent;
     static std::chrono::seconds const RequestTimeout;
 
-    static std::unordered_map<int, std::string_view> GameVersions;
-
 public:
     static arc::Future<geode::Result<bool, void>> CheckIfLevelSent(int levelID);
 
-    static std::string_view GetGameVersion(int gameVersion);
+    static std::string GetGameVersion(int gameVersion);
 
     static bool IsOnGdps();
 

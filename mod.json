@@ -1,6 +1,6 @@
 {
-  "geode": "5.7.1",
-  "version": "v1.8.2",
+  "geode": "5.10.0",
+  "version": "v1.8.3",
 	"gd": {
 		"win": "2.2081",
 		"android": "2.2081",
@@ -12,6 +12,7 @@
   "developer": "M336",
   "description": "Shows information about the level you are on!",
   "links": {
+    "community": "https://discord.gg/adbqkyvbZa",
     "source": "https://github.com/M336G/LevelInfo"
   },
   "issues": {

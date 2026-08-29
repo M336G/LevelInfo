@@ -1,3 +1,6 @@
+# Version 1.8.3
+- Made the game version indicator work for versions before 1.7 too (and also for 1.7 itself)
+
 # Version 1.8.2
 - Added a check to automatically disable the sent indicator on GDPSs (as they are incompatible with the original SendDB API)
 - Added a toggle to disable the warning about using the mod on a GDPS every time the game starts
