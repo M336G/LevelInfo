@@ -1,5 +1,5 @@
 #pragma once
-#include "../utils/CustomStruct.h"
+#include "../utils/CustomStruct.hpp"
 
 class SettingsManager {
 public:

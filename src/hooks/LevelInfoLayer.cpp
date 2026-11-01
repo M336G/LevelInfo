@@ -2,9 +2,9 @@
 #include <cue/LoadingCircle.hpp> // This may be overkill
 #include <asp/iter.hpp>
 
-#include "../managers/SettingsManager.h"
-#include "../managers/SentCacheManager.h"
-#include "../utils/Utils.h"
+#include "../managers/SettingsManager.hpp"
+#include "../managers/SentCacheManager.hpp"
+#include "../utils/Utils.hpp"
 
 using namespace geode::prelude;
 

@@ -1,6 +1,6 @@
-#include "Utils.h"
+#include "Utils.hpp"
 #include <km7dev.server_api/include/ServerAPIEvents.hpp>
-#include "../managers/SettingsManager.h"
+#include "../managers/SettingsManager.hpp"
 
 using namespace geode::prelude;
 

@@ -1,6 +1,6 @@
 #include <Geode/modify/MenuLayer.hpp>
-#include "../managers/SettingsManager.h"
-#include "../utils/Utils.h"
+#include "../managers/SettingsManager.hpp"
+#include "../utils/Utils.hpp"
 
 using namespace geode::prelude;
 

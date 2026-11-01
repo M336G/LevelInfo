@@ -1,5 +1,5 @@
-#include "SettingsManager.h"
-#include "SentCacheManager.h"
+#include "SettingsManager.hpp"
+#include "SentCacheManager.hpp"
 
 using namespace geode::prelude;
 
