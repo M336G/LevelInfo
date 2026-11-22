@@ -7,5 +7,5 @@ public:
     static CustomStruct::ToggleSettings Toggles;
     static CustomStruct::OtherSettings Other;
 
-    static bool ShowedGDPSWarning;
+    // static bool ShowedGDPSWarning;
 };

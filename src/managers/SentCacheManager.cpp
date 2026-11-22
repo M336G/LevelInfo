@@ -1,12 +1,13 @@
 #include "SentCacheManager.hpp"
 #include "SettingsManager.hpp"
+#include <asp/fs/fs.hpp>
 
 using namespace geode::prelude;
 
 std::shared_mutex SentCacheManager::Mutex;
 std::unordered_map<int, CustomStruct::SentCacheEntry> SentCacheManager::Cache = {};
 
-std::filesystem::path SentCacheManager::CachePath = Mod::get()->getSaveDir() / "sent_cache.json";
+asp::fs::Path SentCacheManager::CachePath = Mod::get()->getSaveDir() / "sent_cache.json";
 
 void SentCacheManager::SaveCache() {
     std::shared_lock lock(Mutex);
@@ -14,7 +15,7 @@ void SentCacheManager::SaveCache() {
     matjson::Value cache = {};
 
     for (auto& entry : SentCacheManager::Cache)
-        cache[std::to_string(entry.first)] = entry.second;
+        cache[utils::numToString(entry.first)] = entry.second;
 
     if (cache.size() == 0)
         return;
@@ -29,7 +30,7 @@ void SentCacheManager::SaveCache() {
 void SentCacheManager::LoadCache() {
     std::unique_lock lock(Mutex);
 
-    if (!std::filesystem::exists(SentCacheManager::CachePath))
+    if (!SentCacheManager::CachePath.exists())
         return;
 
     auto result = utils::file::readFromJson<matjson::Value>(SentCacheManager::CachePath);
@@ -45,8 +46,12 @@ void SentCacheManager::LoadCache() {
 };
 
 void SentCacheManager::DeleteCache() {
-    if (std::filesystem::exists(SentCacheManager::CachePath))
-        std::filesystem::remove(SentCacheManager::CachePath);
+    if (SentCacheManager::CachePath.exists()) {
+        auto result = asp::fs::remove(SentCacheManager::CachePath);
+    
+        if (result.isErr())
+            log::error("Failed deleting existing cache at {}: {}", SentCacheManager::CachePath, result.unwrapErr());
+    }
 };
 
 void SentCacheManager::ClearCache(int newLimit) {

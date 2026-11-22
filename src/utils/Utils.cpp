@@ -1,14 +1,15 @@
 #include "Utils.hpp"
-#include <km7dev.server_api/include/ServerAPIEvents.hpp>
+//#include <km7dev.server_api/ServerAPIEvents.hpp>
 #include "../managers/SettingsManager.hpp"
+#include <asp/iter/Split.hpp>
 
 using namespace geode::prelude;
 
 std::string const& Utils::RequestUserAgent = "LevelInfo/" + Mod::get()->getVersion().toNonVString();
-std::chrono::seconds const Utils::RequestTimeout = std::chrono::seconds(3);
+asp::Duration const Utils::RequestTimeout = asp::Duration::fromSecs(3);
 
 arc::Future<Result<bool, void>> Utils::CheckIfLevelSent(int levelID) {
-    if (!Utils::IsOnGdps() && SettingsManager::Other.customSendsEndpoint.empty()) {
+    if (/*!Utils::IsOnGdps() &&*/ SettingsManager::Other.customSendsEndpoint.empty()) {
         auto req = co_await utils::web::WebRequest()
             .userAgent(Utils::RequestUserAgent)
             .timeout(Utils::RequestTimeout)
@@ -17,13 +18,14 @@ arc::Future<Result<bool, void>> Utils::CheckIfLevelSent(int levelID) {
         auto body = req.json().unwrapOrDefault();
         auto error = body["error"].asString().unwrapOrDefault();
 
-        if (req.ok() && body.size() > 0 && error.empty())
+        if (req.ok() && body.size() > 0 && error.empty()) {
             co_return Ok(body["sent"].asBool().unwrap());
-        else
+        } else {
             log::warn(
                 "Failed requesting to the SendDB cache API: {}. Falling back to the original SendDB API",
                 error.size() > 0 ? error : req.errorMessage()
             );
+        }
     }
 
     auto req = co_await utils::web::WebRequest()
@@ -32,7 +34,7 @@ arc::Future<Result<bool, void>> Utils::CheckIfLevelSent(int levelID) {
         .get(SettingsManager::Other.customSendsEndpoint.empty()
             ? "https://api.senddb.dev/api/v1/level/" 
             : SettingsManager::Other.customSendsEndpoint
-            + std::to_string(levelID));
+            + utils::numToString(levelID));
 
     auto body = req.json().unwrapOrDefault();
 
@@ -50,38 +52,38 @@ arc::Future<Result<bool, void>> Utils::CheckIfLevelSent(int levelID) {
 };
 
 // https://github.com/hiimjasmine00/jasmine-tools/blob/6b6a3b00536a341791eb0de33e53b63c49baa8df/src/jasmine.cpp#L39-L66
-bool Utils::IsOnGdps() {
-    static const bool isOnGdps = []() -> bool {
-        std::string url;
+// bool Utils::IsOnGdps() {
+//     static const bool isOnGdps = []() -> bool {
+//         std::string url;
 
-        if (Loader::get()->isModLoaded("km7dev.server_api")) {
-            url = ServerAPIEvents::getCurrentServer().url;
-            if (!url.empty() && url!= "NONE_REGISTERED") {
-                while (url.ends_with("/")) url.pop_back();
-            } else {
-                url = "";
-            }
-        }
+//         if (Loader::get()->isModLoaded("km7dev.server_api")) {
+//             url = ServerAPIEvents::getCurrentServer().url;
+//             if (!url.empty() && url!= "NONE_REGISTERED") {
+//                 while (url.ends_with("/")) url.pop_back();
+//             } else {
+//                 url = "";
+//             }
+//         }
 
-        if (url.empty()) {
-            static_assert(GEODE_COMP_GD_VERSION == 22081, "Incompatible GD version for GDPS check");
-            url = std::string(
-                reinterpret_cast<const char *>(base::get() +
-                    GEODE_WINDOWS(0x558b70)
-                    GEODE_ARM_MAC(0x77d709)
-                    GEODE_INTEL_MAC(0x868df0)
-                    GEODE_ANDROID64(0xeccf90)
-                    GEODE_ANDROID32(0x96c0db)
-                    GEODE_IOS(0x6b8cc2)
-                ), 34
-            );
-        }
+//         if (url.empty()) {
+//             static_assert(GEODE_COMP_GD_VERSION == 22081, "Incompatible GD version for GDPS check");
+//             url = std::string(
+//                 reinterpret_cast<const char *>(base::get() +
+//                     GEODE_WINDOWS(0x558b70)
+//                     GEODE_ARM_MAC(0x77d709)
+//                     GEODE_INTEL_MAC(0x868df0)
+//                     GEODE_ANDROID64(0xeccf90)
+//                     GEODE_ANDROID32(0x96c0db)
+//                     GEODE_IOS(0x6b8cc2)
+//                 ), 34
+//             );
+//         }
 
-        return url.find("://www.boomlings.com/database") == std::string::npos;
-    }();
+//         return url.find("://www.boomlings.com/database") == std::string::npos;
+//     }();
 
-    return isOnGdps;
-}
+//     return isOnGdps;
+// }
 
 std::string Utils::GetGameVersion(int gameVersion) {
     // https://wyliemaster.github.io/gddocs/#/resources/server/level
@@ -105,7 +107,7 @@ std::string Utils::FormatNumber(size_t number) {
     if (number == 0)
         return "N/A";
 
-    auto string = std::to_string(number);
+    auto string = utils::numToString(number);
 
     if (SettingsManager::Display.separator != "None")
         for (int i = string.size() - 3; i > 0; i -= 3)
@@ -121,16 +123,26 @@ std::string Utils::FormatTime(std::chrono::seconds seconds) {
     std::string string;
     auto hours = std::chrono::duration_cast<std::chrono::hours>(seconds).count();
     if (hours > 0)
-        string += std::to_string(hours) + "h";
+        string += utils::numToString(hours) + "h";
 
     auto minutes = std::chrono::duration_cast<std::chrono::minutes>(seconds).count() % 60;
     if (minutes > 0)
-        string += std::to_string(minutes) + "m";
+        string += utils::numToString(minutes) + "m";
 
-    string += std::to_string(seconds.count() % 60) + "s";
+    string += utils::numToString(seconds.count() % 60) + "s";
     
     return string;
 };
+
+std::string Utils::FormatIndicator(std::string_view name, std::string_view emoji, std::string_view value) {
+    if (SettingsManager::Display.indicator == "Text & emoji") {
+        return fmt::format("{} {}: {}", emoji, name, value);
+    } else if (SettingsManager::Display.indicator == "Emoji only") {
+        return fmt::format("{} {}", emoji, value);
+    } else {
+        return fmt::format("{}: {}", name, value);
+    }
+}
 
 bool Utils::ObjectHasKeyValue(std::string_view object, std::string_view key, std::string_view value) {
     std::string needle = std::string(key) + "," + std::string(value);

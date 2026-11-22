@@ -1,11 +1,11 @@
 {
-  "geode": "5.10.0",
-  "version": "v1.8.3",
+  "geode": "6.0.0-beta.1",
+  "version": "v1.9.0-beta.1",
 	"gd": {
-		"win": "2.2081",
-		"android": "2.2081",
-		"mac": "2.2081",
-    "ios": "2.2081"
+		"win": "2.2091",
+		"android": "2.2091",
+		"mac": "2.2091",
+    "ios": "2.2091"
 	},
   "id": "m336.levelinfo",
   "name": "Level Info",
@@ -33,7 +33,7 @@
       "name": "X-Axis Offset",
       "description": "Modify the informational text's position horizontally",
       "type": "int",
-      "default": 0,
+      "default": 5,
       "min": -1000,
       "max": 1000,
       "control": {
@@ -55,7 +55,7 @@
       "name": "Size",
       "description": "Scale the informational text's position up or down",
       "type": "float",
-      "default": 0.25,
+      "default": 0.24,
       "min": 0,
       "max": 1,
       "control": {
@@ -86,13 +86,20 @@
       "default": "Comma",
       "one-of": ["Comma", "Space", "None"]
     },
+    "emoji-indicators": {
+      "name": "Emoji Indicators",
+      "description": "Choose how indicators are labeled: text only, text with an emoji before it, or emojis only",
+      "type": "string",
+      "default": "Text & emoji",
+      "one-of": ["Text only", "Text & emoji", "Emoji only"]
+    },
 
     "toggle-settings": {
       "type": "title",
       "name": "Toggle Settings"
     },
     "show-requested-stars": {
-      "name": "Requested Stars",
+      "name": "Requested Stars/Moons",
       "description": "Display the amount of stars/moons requested by the creator of a level",
       "type": "bool",
       "default": true
@@ -235,18 +242,6 @@
       "type": "string",
       "filter": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:/.-_%?&=[]@",
       "default": ""
-    },
-    "disable-gdps-warning": {
-      "name": "Disable GDPS Warning",
-      "description": "Disable the warning you get when you're on a GDPS and have the sent indicator toggled on",
-      "type": "bool",
-      "default": false
-    }
-  },
-  "dependencies": {
-    "km7dev.server_api": {
-      "version": "v4.0.0",
-      "required": false
     }
   }
 }

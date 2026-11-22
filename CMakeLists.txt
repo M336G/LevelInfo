@@ -9,7 +9,7 @@ endif()
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(GEODE_PACKAGE_ZSTD ON)
 
-project(LevelInfo VERSION 1.8.3)
+project(LevelInfo VERSION 1.9.0)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
 
@@ -25,5 +25,5 @@ add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 
 setup_geode_mod(${PROJECT_NAME})
 
-CPMAddPackage("gh:dankmeme01/cue#40c5bd6")
+CPMAddPackage("gh:dankmeme01/cue#e80ac94")
 target_link_libraries(${PROJECT_NAME} cue)

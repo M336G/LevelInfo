@@ -10,7 +10,8 @@ CustomStruct::DisplaySettings SettingsManager::Display = {
     Mod::get()->getSettingValue<float>("text-size"),
     round(Mod::get()->getSettingValue<int>("text-opacity") / 100.f * 255),
     Mod::get()->getSettingValue<ccColor3B>("text-color"),
-    Mod::get()->getSettingValue<std::string>("number-separator")
+    Mod::get()->getSettingValue<std::string>("number-separator"),
+    Mod::get()->getSettingValue<std::string>("emoji-indicators"),
 };
 
 CustomStruct::ToggleSettings SettingsManager::Toggles = {
@@ -37,8 +38,8 @@ CustomStruct::OtherSettings SettingsManager::Other = {
     Mod::get()->getSettingValue<bool>("enable-sent-cache"),
     Mod::get()->getSettingValue<int>("sent-cache-limit"),
     Mod::get()->getSettingValue<int>("sent-cache-expiration") * 60,
-    Mod::get()->getSettingValue<std::string>("custom-sends-endpoint"),
-    !Mod::get()->getSettingValue<bool>("disable-gdps-warning")
+    Mod::get()->getSettingValue<std::string>("custom-sends-endpoint")/*,*/
+    // !Mod::get()->getSettingValue<bool>("disable-gdps-warning")
 };
 
 // There is DEFINITELY a better way to do this but if it works it works
@@ -61,6 +62,9 @@ $execute {
     });
     listenForSettingChanges<std::string>("number-separator", [](std::string_view separator) {
         SettingsManager::Display.separator = separator;
+    });
+    listenForSettingChanges<std::string>("emoji-indicators", [](std::string_view indicator) {
+        SettingsManager::Display.indicator = indicator;
     });
 
     // Toggles Settings
@@ -137,9 +141,9 @@ $execute {
     listenForSettingChanges<std::string>("custom-sends-endpoint", [](std::string url) {
         SettingsManager::Other.customSendsEndpoint = url;
     });
-    listenForSettingChanges<bool>("disable-gdps-warning", [](bool enabled) {
-        SettingsManager::Other.showGDPSWarning = !enabled;
-    });
+    // listenForSettingChanges<bool>("disable-gdps-warning", [](bool enabled) {
+    //     SettingsManager::Other.showGDPSWarning = !enabled;
+    // });
 };
 
-bool SettingsManager::ShowedGDPSWarning = false;
+// bool SettingsManager::ShowedGDPSWarning = false;

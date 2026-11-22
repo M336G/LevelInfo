@@ -8,6 +8,7 @@ namespace CustomStruct {
         float opacity;
         cocos2d::ccColor3B color;
         std::string separator;
+        std::string indicator;
 
         cocos2d::CCPoint getPosition() const {
             auto winSize = cocos2d::CCDirector::get()->getWinSize();
@@ -50,7 +51,7 @@ namespace CustomStruct {
         int maxSentCacheLimit;
         int maxSentCacheExpiration;
         std::string customSendsEndpoint;
-        bool showGDPSWarning;
+        // bool showGDPSWarning;
     };
 
     struct SentCacheEntry {

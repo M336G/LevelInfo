@@ -10,13 +10,13 @@ using namespace geode::prelude;
 
 class $modify(MyLevelInfoLayer, LevelInfoLayer) {
     struct Fields {
-        cue::LoadingCircle* m_loadingCircle = cue::LoadingCircle::create();
-        CCLabelBMFont* m_label;
+        cue::LoadingCircle *m_loadingCircle = cue::LoadingCircle::create();
+        geode::Label *m_label = nullptr;
 
         CCPoint const m_position = SettingsManager::Display.getPosition();
     };
 
-    bool init(GJGameLevel* level, bool challenge) {
+    bool init(GJGameLevel *level, bool challenge) {
         if (!LevelInfoLayer::init(level, challenge))
             return false;
 
@@ -37,16 +37,16 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
     };
 
     // This will be called if the level just finished downloading
-    void levelDownloadFinished(GJGameLevel* level) {
+    void levelDownloadFinished(GJGameLevel *level) {
 		LevelInfoLayer::levelDownloadFinished(level);
 
         if (SettingsManager::Display.size > 0 && SettingsManager::Toggles.anyEnabled())
             showLevelInfo(level);
     };
 
-	void showLevelInfo(GJGameLevel* level) {
+	void showLevelInfo(GJGameLevel *level) {
         // Remove any duplicate first (caused by level updates, ...)
-        if (auto* label = static_cast<CCLabelBMFont*>(this->getChildByIDRecursive("level-info-label"_spr)))
+        if (auto *label = static_cast<geode::Label *>(this->getChildByIDRecursive("level-info-label"_spr)))
             label->removeFromParentAndCleanup(true);
 
         Ref<MyLevelInfoLayer> self = this;
@@ -54,21 +54,26 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
 
         // Here I define every stats depending on them being enabled or not
         if (SettingsManager::Toggles.requestedStars)
-            labelContent << "Requested " << (level->isPlatformer() ? "Moons" : "Stars") << ": " <<
+            labelContent << Utils::FormatIndicator(
+                fmt::format("Requested {}", level->isPlatformer() ? "Moons" : "Stars"),
+                level->isPlatformer() ? ":moon:" : ":star:",
                 Utils::FormatNumber(level->m_starsRequested) // Exclusively for trollers on GDPSs
-                << std::endl;
+            ) << std::endl;
         
 		if (SettingsManager::Toggles.featuredRank)
-            labelContent <<  "Featured Rank: " << (level->m_featured > 0
+            labelContent <<  Utils::FormatIndicator(
+                "Featured Rank",
+                ":chart:",
+                level->m_featured > 0
                     ? Utils::FormatNumber(level->m_featured)
-                    : "N/A")
-                << std::endl;
+                    : "N/A"
+            ) << std::endl;
 
         // This may be a little confusing but this was merged to avoid running the
         // decompression twice asynchronously (as it blocks the main thread if it's synchronous)
         if (SettingsManager::Toggles.objectCount || SettingsManager::Toggles.ldmObjectCount) {
-            static std::string_view constexpr objectCountLoadingPlaceholder = "Objects: Loading...";
-            static std::string_view constexpr ldmObjectCountLoadingPlaceholder = "Objects (LDM): Loading...";
+            std::string const objectCountLoadingPlaceholder = Utils::FormatIndicator("Objects", ":skullbomb:", "Loading...");
+            std::string const ldmObjectCountLoadingPlaceholder = Utils::FormatIndicator("Objects (LDM)", ":bomb:", "Loading...");
 
             bool objectCountIndicatorNeedsUpdate = false;
             bool ldmObjectCountIndicatorNeedsUpdate = false;
@@ -85,8 +90,11 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                         objectCountIndicatorNeedsUpdate = true;
                         break;
                     default:
-                        labelContent << "Objects: " << Utils::FormatNumber(level->m_objectCount)
-                            << std::endl;
+                        labelContent << Utils::FormatIndicator(
+                            "Objects",
+                            ":skullbomb:",
+                            Utils::FormatNumber(level->m_objectCount)
+                        ) << std::endl;
                         break;
                 }
             }
@@ -100,7 +108,11 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                     labelContent << ldmObjectCountLoadingPlaceholder << std::endl;
                     ldmObjectCountIndicatorNeedsUpdate = true;
                 } else {
-                    labelContent << "Objects (LDM): N/A" << std::endl;
+                        labelContent << Utils::FormatIndicator(
+                            "Objects (LDM)",
+                            ":bomb:",
+                            "N/A"
+                        ) << std::endl;
                 }
             }
 
@@ -119,7 +131,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
 
                                 // Before I forget what that corresponds to https://boomlings.dev/resources/client/level-components/level-string
                                 // {object};{object};{object};...
-                                for (auto& object : asp::iter::split(decompressedLevelString, ';')) {
+                                for (auto object : asp::iter::split(decompressedLevelString, ';')) {
                                     if (object.empty() || Utils::ObjectIsLevelSettings(object))
                                         continue;
 
@@ -135,7 +147,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                             }
                         );
                     },
-                    [self, objectCountIndicatorNeedsUpdate, ldmObjectCountIndicatorNeedsUpdate](std::pair<size_t, size_t> count) {
+                    [self, objectCountLoadingPlaceholder, ldmObjectCountLoadingPlaceholder, objectCountIndicatorNeedsUpdate, ldmObjectCountIndicatorNeedsUpdate](std::pair<size_t, size_t> count) {
                         if (!self->m_fields->m_label)
                             return;
                         
@@ -147,7 +159,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                             auto pos = labelContent.find(objectCountLoadingPlaceholder);
                             if (pos != std::string::npos)
                                 labelContent.replace(pos, objectCountLoadingPlaceholder.length(),
-                                    fmt::format("Objects: {}", Utils::FormatNumber(count.first)));
+                                    Utils::FormatIndicator("Objects", ":skullbomb:", Utils::FormatNumber(count.first)));
                         }
 
                         // If the LDM object count indicator was in the loading state,
@@ -158,16 +170,20 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                                 labelContent.replace(
                                     pos,
                                     ldmObjectCountLoadingPlaceholder.length(),
-                                    fmt::format(
-                                        "Obj. (LDM): {} (-{}%)",
-                                        Utils::FormatNumber(count.first - count.second),
-                                        static_cast<int>(std::round(100.f * count.second / count.first))
+                                    Utils::FormatIndicator(
+                                        "Obj. (LDM)",
+                                        ":bomb:",
+                                        fmt::format(
+                                            "{} (-{}%)",
+                                            Utils::FormatNumber(count.first - count.second),
+                                            static_cast<int>(std::round(100.f * count.second / count.first))
+                                        )
                                     )
                                 );
                             }
                         }
 
-                        self->m_fields->m_label->setString(labelContent.c_str(), true);
+                        self->m_fields->m_label->setText(labelContent.c_str());
                         self->updateLayout();
                     }
                 );
@@ -175,34 +191,50 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
         }
 
         if (SettingsManager::Toggles.gameVersion)
-            labelContent << "Game Version: " << Utils::GetGameVersion(level->m_gameVersion) << std::endl;
+            labelContent << Utils::FormatIndicator(
+                "Game Version",
+                ":gear:",
+                Utils::GetGameVersion(level->m_gameVersion)
+            ) << std::endl;
 
         if (SettingsManager::Toggles.twoPlayerMode)
-            labelContent << "2-Player Mode: " << (level->m_twoPlayerMode ? "Yes" : "No")
-                << std::endl;
+            labelContent << Utils::FormatIndicator(
+                "2-Player Mode",
+                ":raisedhands:",
+                level->m_twoPlayerMode ? "Yes" : "No"
+            ) << std::endl;
         
 		if (SettingsManager::Toggles.levelVersion)
-            labelContent << "Level Version: " << Utils::FormatNumber(level->m_levelVersion) // I mean, why not
-                << std::endl;
+            labelContent << Utils::FormatIndicator(
+                "Level Version",
+                ":quest:",
+                Utils::FormatNumber(level->m_levelVersion) // I mean, why not
+            ) << std::endl;
         
 		if (SettingsManager::Toggles.ldmExistence)
-            labelContent << "Has LDM: " << (level->m_lowDetailMode ? "Yes" : "No")
-                << std::endl;
+            labelContent << Utils::FormatIndicator(
+                "Has LDM",
+                ":spike:",
+                level->m_lowDetailMode ? "Yes" : "No"
+            ) << std::endl;
         
-        if (SettingsManager::Toggles.sent && (!Utils::IsOnGdps() || !SettingsManager::Other.customSendsEndpoint.empty())) {
+        if (SettingsManager::Toggles.sent /*&& (!Utils::IsOnGdps() || !SettingsManager::Other.customSendsEndpoint.empty())*/) {
             if (level->m_stars == 0) {
                 if (auto cached = SettingsManager::Other.enableSentCache ? SentCacheManager::GetLevel(level->m_levelID) : std::nullopt) {
-                    labelContent << "Sent: " << (cached.value() ? "Yes" : "No")
-                        << std::endl;
+                    labelContent << Utils::FormatIndicator(
+                        "Sent",
+                        ":rate:",
+                        cached.value() ? "Yes" : "No"
+                    ) << std::endl;
                 } else {
-                    static std::string_view constexpr placeholder = "Sent: Loading...";
+                    std::string const placeholder = Utils::FormatIndicator("Sent", ":rate:", "Loading...");
                     labelContent << placeholder << std::endl;
 
                     auto levelID = static_cast<int>(level->m_levelID);
                     
                     async::spawn(
                         Utils::CheckIfLevelSent(levelID),
-                        [self, levelID](Result<bool, void> result) {
+                        [self, levelID, placeholder](Result<bool, void> result) {
                             if (!self->m_fields->m_label)
                                 return;
                             
@@ -218,8 +250,9 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                                 labelContent.replace(
                                     pos,
                                     placeholder.length(),
-                                    fmt::format(
-                                        "Sent: {}",
+                                    Utils::FormatIndicator(
+                                        "Sent",
+                                        ":rate:",
                                         !failed
                                             ? sent
                                                 ? "Yes"
@@ -228,53 +261,80 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
                                     )
                                 );
 
-                            self->m_fields->m_label->setString(labelContent.c_str(), true);
+                            self->m_fields->m_label->setText(labelContent.c_str());
                             self->updateLayout();
                         }
                     );
                 }
             } else {
                 SentCacheManager::DeleteLevel(level->m_levelID);
-                labelContent << "Sent: Rated" << std::endl;
+                labelContent << Utils::FormatIndicator(
+                    "Sent",
+                    ":rate:",
+                    "Rated"
+                ) << std::endl;
             }
         }
         
 		if (SettingsManager::Toggles.levelID)
-            labelContent << "Level ID: " << level->m_levelID << std::endl;
+            labelContent << Utils::FormatIndicator(
+                "Level ID",
+                ":question:",
+                utils::numToString(level->m_levelID.value())
+            ) << std::endl;
 
 		if (SettingsManager::Toggles.originalLevel)
-            labelContent << "Original ID: " <<
-                (level->m_originalLevel == 0 || level->m_levelID == level->m_originalLevel
-                ? "N/A" : std::to_string(level->m_originalLevel)) << std::endl;
+            labelContent << Utils::FormatIndicator(
+                "Original ID",
+                ":exclaim:",
+                level->m_originalLevel == 0 || level->m_levelID == level->m_originalLevel
+                    ? "N/A" : utils::numToString(level->m_originalLevel.value())
+            ) << std::endl;
 
         if (SettingsManager::Toggles.editorTime)
-            labelContent << "Editor: " <<
-                Utils::FormatTime(std::chrono::seconds(level->m_workingTime)) << std::endl;
+            labelContent << Utils::FormatIndicator(
+                "Editor",
+                ":tools:",
+                Utils::FormatTime(std::chrono::seconds(level->m_workingTime))
+            ) << std::endl;
 
         if (SettingsManager::Toggles.editorTimeCopies)
-            labelContent << "Edit. (+cop.): " <<
+            labelContent << Utils::FormatIndicator(
+                "Edit. (+cop.)",
+                ":download:",
                 Utils::FormatTime(std::chrono::seconds(level->m_workingTime + level->m_workingTime2))
-                << std::endl;
+            ) << std::endl;
 
         if (SettingsManager::Toggles.attempts)
-            labelContent << "Attempts: " << Utils::FormatNumber(level->m_attempts)
-                << std::endl;
+            labelContent << Utils::FormatIndicator(
+                "Attempts",
+                ":skull:",
+                Utils::FormatNumber(level->m_attempts)
+            ) << std::endl;
         
 		if (SettingsManager::Toggles.jumps)
-            labelContent << "Jumps: " << Utils::FormatNumber(level->m_jumps)
-                << std::endl;
+            labelContent << Utils::FormatIndicator(
+                "Jumps",
+                ":chartup:",
+                Utils::FormatNumber(level->m_jumps)
+            ) << std::endl;
         
 		if (SettingsManager::Toggles.clicks)
-            labelContent << "Clicks (best att.): " << Utils::FormatNumber(level->m_clicks)
-                << std::endl;
+            labelContent << Utils::FormatIndicator(
+                "Clicks (best att.)",
+                ":arrowright:",
+                Utils::FormatNumber(level->m_clicks)
+            ) << std::endl;
         
 		if (SettingsManager::Toggles.attemptTime)
-            labelContent << "Time (best att.): " <<
+            labelContent << Utils::FormatIndicator(
+                "Time (best att.)",
+                ":clock:",
                 Utils::FormatTime(std::chrono::seconds(static_cast<int>(level->m_attemptTime)))
-                << std::endl;
+            ) << std::endl;
 
         // Once we got all the values for the label, create it and set its settings
-        m_fields->m_label = CCLabelBMFont::create(
+        m_fields->m_label = geode::Label::create(
             labelContent.str().c_str(),
             "bigFont.fnt"
         );
@@ -284,6 +344,7 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
         m_fields->m_label->setOpacity(SettingsManager::Display.opacity);
         m_fields->m_label->setColor(SettingsManager::Display.color);
 
+        m_fields->m_label->setAnchorPoint({ 0.55f, 0.55f });
         m_fields->m_label->setPosition(m_fields->m_position);
 
         // And display it

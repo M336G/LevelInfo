@@ -1,3 +1,8 @@
+# Version 1.9.0
+- Ported the mod to 2.2091 (temporarily without GDPS check)
+- Added emoji indicator, allowing you to choose how indicators are labeled: text only, text with an emoji before it, or emojis only
+- Updated cue to the latest commit as of this date
+
 # Version 1.8.3
 - Made the game version indicator work for versions before 1.7 too (and also for 1.7 itself)
 

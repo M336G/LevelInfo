@@ -2,7 +2,7 @@
 A <cj>simple</c> yet <cj>fully-customizable</c> mod showing <cj>additional information</c> on a <cj>level's page</c>!
 
 ## Toggleable features
-- <cl>**Requested stars**</c>: display the amount of stars/moons requested by the creator of a level.
+- <cl>**Requested stars/moons**</c>: display the amount of stars/moons requested by the creator of a level.
 - <cl>**Featured Rank**</c>: display a level's featured rank.
 - <cl>**Objects**</c>: display the amount of objects in a level.
 - <cl>**Objects (with LDM)**</c>: display the amount of objects in a level with Low Detail Mode toggled on.
@@ -26,6 +26,7 @@ A <cj>simple</c> yet <cj>fully-customizable</c> mod showing <cj>additional infor
 - <cb>**Opacity**</c>: make the informational text more or less transparent.
 - <cb>**Color**</c>: change the color of the informational text.
 - <cb>**Number separator**</c>: choose a separator for big numbers to be more readable.
+- <cb>**Emoji indicators**</c>: choose how indicators are labeled: text only, text with an emoji before it, or emojis only.
 
 ## Want to help?
 Feel free to open a [Pull Request](https://github.com/M336G/LevelInfo/pulls) on GitHub!
